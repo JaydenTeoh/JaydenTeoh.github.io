@@ -1,19 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://github.com/JaydenTeoh/JaydenTeoh.github.io/posts/post-with-code/index.html</loc>
-    <lastmod>2023-12-22T15:36:26.720Z</lastmod>
-  </url>
-  <url>
-    <loc>https://github.com/JaydenTeoh/JaydenTeoh.github.io/index.html</loc>
-    <lastmod>2023-12-22T15:36:26.212Z</lastmod>
-  </url>
-  <url>
-    <loc>https://github.com/JaydenTeoh/JaydenTeoh.github.io/about.html</loc>
-    <lastmod>2023-12-22T15:36:25.508Z</lastmod>
+    <loc>https://github.com/JaydenTeoh/JaydenTeoh.github.io/posts/GANs/index.html</loc>
+    <lastmod>2023-12-22T22:13:33.765Z</lastmod>
   </url>
   <url>
     <loc>https://github.com/JaydenTeoh/JaydenTeoh.github.io/posts/welcome/index.html</loc>
-    <lastmod>2023-12-22T15:36:26.464Z</lastmod>
+    <lastmod>2023-12-22T22:13:32.801Z</lastmod>
+  </url>
+  <url>
+    <loc>https://github.com/JaydenTeoh/JaydenTeoh.github.io/about.html</loc>
+    <lastmod>2023-12-22T22:13:31.821Z</lastmod>
+  </url>
+  <url>
+    <loc>https://github.com/JaydenTeoh/JaydenTeoh.github.io/index.html</loc>
+    <lastmod>2023-12-22T22:13:32.537Z</lastmod>
+  </url>
+  <url>
+    <loc>https://github.com/JaydenTeoh/JaydenTeoh.github.io/posts/post-with-code/index.html</loc>
+    <lastmod>2023-12-22T22:13:33.049Z</lastmod>
   </url>
 </urlset>
