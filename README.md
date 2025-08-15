@@ -1,1 +1,1 @@
-This is the source code to Jon Barron's public academic website: https://jonbarron.info/. Feel free to clone this code for your own personal use.
+This is the source code to Jayden Teoh's public academic website: https://JaydenTeoh.github.io/. Template found from https://github.com/jonbarron/jonbarron.github.io/.
