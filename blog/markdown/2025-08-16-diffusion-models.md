@@ -46,7 +46,7 @@ As $T\rightarrow \infty$, $x_T$ is equivalent to an isotropic Gaussian distribut
 
 ### Reverse Diffusion Process
 
-![Image by [Karagiannakos and Adaloglou (2022)](https://theaisummer.com/diffusion-models/) ****modified from [Ho et al. (2020)](https://arxiv.org/abs/2006.11239)](../assets/2025-08-16-diffusion-models/Untitled%201.png)
+![Image by [Karagiannakos and Adaloglou (2022)](https://theaisummer.com/diffusion-models/), modified from [Ho et al. (2020)](https://arxiv.org/abs/2006.11239)](../assets/2025-08-16-diffusion-models/Untitled%201.png)
 
 In the reverse process, we aim to learn a model that can denoise the pure Gaussian noise, i.e. $x_T \sim \mathcal{N}(x_T; 0,\mathbf{I})$, to recover the original sample image. As mentioned by Sohl-Dickstein et al. (2015),
 
