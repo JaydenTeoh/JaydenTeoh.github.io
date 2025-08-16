@@ -53,9 +53,40 @@
           tags: ["machine learning", "research"],
           excerpt: "Personal notes during my journey of understanding diffusion models.",
           url: "blog_posts/html/2025-08-16-diffusion-models.html",
-          coverImage: "blog_posts/assets/2025-08-16-diffusion-models/Untitled%203.png" // Add cover image path
+          coverImage: "blog_posts/assets/2025-08-16-diffusion-models/Untitled%203.png"
         },
       ];
+
+      // Pastel color palette for tags
+      const pastelColors = [
+        '#FFB3BA', // Light pink
+        '#BAFFC9', // Light green
+        '#BAE1FF', // Light blue
+        '#FFFFBA', // Light yellow
+        '#FFB3F7', // Light purple
+        '#B3FFE6', // Light teal
+        '#FFD4B3', // Light orange
+        '#E6B3FF', // Light lavender
+        '#B3FFB3', // Light mint
+        '#FFE6B3', // Light peach
+        '#B3D4FF', // Light sky blue
+        '#FFB3D4', // Light rose
+        '#D4FFB3', // Light lime
+        '#B3FFF0', // Light cyan
+        '#F0B3FF', // Light magenta
+        '#FFE6E6'  // Light coral
+      ];
+
+      // Function to get a consistent color for a tag
+      function getTagColor(tag) {
+        // Create a simple hash of the tag to get consistent colors
+        let hash = 0;
+        for (let i = 0; i < tag.length; i++) {
+          hash = tag.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        hash = Math.abs(hash);
+        return pastelColors[hash % pastelColors.length];
+      }
 
       // Function to render blog posts
       function renderBlogPosts() {
@@ -75,11 +106,14 @@
             <div class="post-header">
               ${coverImageHtml}
               <div class="post-info">
-                <h3><a href="${post.url}" style="text-decoration: none; color: #333;">${post.title}</a></h3>
+                <h3><a href="${post.url}" style="text-decoration: none; ">${post.title}</a></h3>
                 <p style="color: #666; font-size: 0.9rem;">${post.date}</p>
                 <p>${post.excerpt}</p>
                 <div style="margin-top: 0.5rem;">
-                  ${post.tags.map(tag => `<span style="background: #e9ecef; padding: 0.2rem 0.5rem; border-radius: 3px; font-size: 0.8rem; margin-right: 0.5rem;">${tag}</span>`).join('')}
+                  ${post.tags.map(tag => {
+                    const color = getTagColor(tag);
+                    return `<span style="background: ${color}; color: #333; padding: 0.3rem 0.7rem; border-radius: 3px; font-size: 0.8rem; margin-right: 0.5rem; display: inline-block; margin-bottom: 0.3rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">${tag}</span>`;
+                  }).join('')}
                 </div>
               </div>
             </div>

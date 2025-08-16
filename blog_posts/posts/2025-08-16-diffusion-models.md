@@ -20,7 +20,7 @@ To better understand this, let’s focus on the forward diffusion process and re
 
 ### Forward Diffusion Process
 
-![Image by [Karagiannakos and Adaloglou (2022)](https://theaisummer.com/diffusion-models/) ****modified from [Ho et al. (2020)](https://arxiv.org/abs/2006.11239)](../assets/2025-08-16-diffusion-models/Untitled.png)
+![Image by [Karagiannakos and Adaloglou (2022)](https://theaisummer.com/diffusion-models/), modified from [Ho et al. (2020)](https://arxiv.org/abs/2006.11239)](../assets/2025-08-16-diffusion-models/Untitled.png)
 
 In the forward trajectory, we want to gradually “corrupt” the training images. As such, we iteratively apply Gaussian noise to images sampled from the true data distribution, i.e. $x_0 \sim q(x)$, in over $T$ steps to produce a sequence of noisy samples $x_0, x_1, \dots , x_T$. 
 
@@ -79,10 +79,10 @@ But how exactly do we teach a neural network (or other function approximation me
 Naively, we can use a maximum likelihood objective where we maximize the likelihood assigned to $x_0$ by the model, i.e.
 
 $$
-\begin{align} \notag
-p_\theta(x_0) &= \int p_\theta(x_{0:T})dx_{1:T}  \\\ \notag
+\begin{aligned}
+p_\theta(x_0) &= \int p_\theta(x_{0:T})dx_{1:T}  \\
 L &= -\log(p_\theta(x_0))
-\end{align}
+\end{aligned}
 $$
 
 This objective is unfortunately intractable as it requires us to marginalize over all possible trajectories we could have taken from $x_{1:T}$. Rather, we can take inspiration from Variational Autoencoders (VAE) and reformulate the training objective using a variational lower bound (VLB), also known as **“evidence lower bound” (ELBO)**.
@@ -141,15 +141,15 @@ $$
 where $\epsilon \sim \mathcal{N}(\epsilon; 0, \mathbf{I})$. To express $q(x_{t}| x_0)$ in closed form, we recursively apply the reparameterisation trick. That is, for any $x_t \sim q(x_t | x_0)$,
 
 $$
-\begin{align} \notag
-x_t &= \sqrt{\alpha_t}x_{t-1} + \sqrt{1- \alpha_t}\epsilon^*_{t-1} \\\ \notag
-&= \sqrt{\alpha_t a_{t-1}}x_{t-2} + \sqrt{\alpha_t - \alpha_t a_{t-1}}\epsilon^*_{t-2} + \sqrt{1-\alpha_t}\epsilon^*_{t-1} \\\
-&=  \sqrt{\alpha_t a_{t-1}}x_{t-2} + \sqrt{\alpha_t - \alpha_t a_{t-1} + 1 - \alpha_t}\epsilon_{t-2} \\\ \notag
-&= \dots \\\ \notag
-&= \sqrt{\prod_{i=1}^t a_i}x_0 + \sqrt{1-\prod_{i=1}^t a_i}\epsilon_0 \\\ \notag
-&= \sqrt{\bar{a}_t}x_0 + \sqrt{1-\bar{a}_t}\epsilon_0 \\\ \notag
-&\sim \mathcal{N}(x_t; \sqrt{\bar{a}_t}x_0, (1-\bar{a}_t)\mathbf{I}) \\ \notag
-\end{align}
+\begin{aligned}
+x_t &= \sqrt{\alpha_t}x_{t-1} + \sqrt{1- \alpha_t}\epsilon^*_{t-1} \\
+&= \sqrt{\alpha_t a_{t-1}}x_{t-2} + \sqrt{\alpha_t - \alpha_t a_{t-1}}\epsilon^*_{t-2} + \sqrt{1-\alpha_t}\epsilon^*_{t-1} \\
+&=  \sqrt{\alpha_t a_{t-1}}x_{t-2} + \sqrt{\alpha_t - \alpha_t a_{t-1} + 1 - \alpha_t}\epsilon_{t-2} \\
+&= \dots \\
+&= \sqrt{\prod_{i=1}^t a_i}x_0 + \sqrt{1-\prod_{i=1}^t a_i}\epsilon_0 \\
+&= \sqrt{\bar{a}_t}x_0 + \sqrt{1-\bar{a}_t}\epsilon_0 \\
+&\sim \mathcal{N}(x_t; \sqrt{\bar{a}_t}x_0, (1-\bar{a}_t)\mathbf{I}) \\
+\end{aligned}
 $$
 
 where $\bar{\alpha}_t = \prod_{i=1}^t \alpha_i$. We can merge two Gaussians in (1) since the sum of two independent Gaussian random variables is a Gaussian with mean being the sum of the two means and variance being the sum of the two variances. We have therefore derived $q(x_{t}| x_0)$ and we can reuse the parameterization trick to yield $q(x_{t-1}| x_0) = \mathcal{N}(x_{t-1}; \sqrt{\bar{\alpha}_{t-1}}x_0, (1-\bar{\alpha}_{t-1})\mathbf{I})$. Substituting both expressions into the Bayes rule expansion of the ground truth denoising step (intermediate steps have been omitted for brevity):
@@ -213,10 +213,10 @@ $$
 We can formulate our variational lower bound loss function as
 
 $$
-\begin{align}
-L &= \notag \mathbb{E}_{x_0, \epsilon} \Big[ \frac{(1 - \alpha_t)^2}{2\sigma_q^2(t)(1 - \bar\alpha_t)\alpha_t}\left \lVert{\epsilon}_0 - {\hat\epsilon}_{{\theta}}(x_t, t)\right\rVert^2_2 \Big] \\
+\begin{aligned}
+L &= \mathbb{E}_{x_0, \epsilon} \Big[ \frac{(1 - \alpha_t)^2}{2\sigma_q^2(t)(1 - \bar\alpha_t)\alpha_t}\left \lVert{\epsilon}_0 - {\hat\epsilon}_{{\theta}}(x_t, t)\right\rVert^2_2 \Big] \\
 &= \mathbb{E}_{x_0, \epsilon} \Big[ \frac{\beta_t^2}{2\sigma_q^2(t)(1 - \bar\alpha_t)\alpha_t}\left \lVert{\epsilon}_0 - {\hat\epsilon}_{{\theta}}(x_t, t)\right\rVert^2_2 \Big] \tag{2}
-\end{align}
+\end{aligned}
 $$
 
 ### Simplification of Loss Term
@@ -237,7 +237,7 @@ So far, I have been covering generative models via the “likelihood-based” ob
 
 ### Motivation behind Score Matching
 
-In order to build a likelihood-based generative model, given a dataset $x = \set{x_1, x_2, \dots, x_N}$, one learns a function $f_\theta (x) \in \mathbb{R}$ parameterized by a learnable parameter $\theta$ that best explains the observed data. More specifically, our goal would be to find the $\theta$ that maximises the log probability density function (or probability mass function in the discrete case) of the data:
+In order to build a likelihood-based generative model, given a dataset $x = \{x_1, x_2, \dots, x_N\}$, one learns a function $f_\theta (x) \in \mathbb{R}$ parameterized by a learnable parameter $\theta$ that best explains the observed data. More specifically, our goal would be to find the $\theta$ that maximises the log probability density function (or probability mass function in the discrete case) of the data:
 
 $$
 \max_\theta\sum_{i=1}^N\log p_\theta(x_i)
@@ -269,9 +269,9 @@ where $s_\theta(x)$ is our score-based model that learns $\theta$ that best appr
 It is intuitive to see that $s_\theta(x)$ is independent of the normalization constant $Z_\theta$. And to train score-based models, we can simply minimize the expected Fisher Divergence between the $s_\theta (x)$ and the score function:
 
 $$
-\begin{align}
+\begin{aligned}
 \hat{\theta} &= \argmin_{\theta} \frac{1}{2}\mathbb{E}_{p(x)} \Big[ \|  \nabla_x \log p(x) -  s_\theta(x)  \|^2_2 \Big] \tag{4}
-\end{align}
+\end{aligned}
 $$
 
 Intuitively, the Fisher Divergence measures the squared $\ell_2$ distance between the ground truth score function and the score-based model. This is what is known as ***score matching***. Instead of directly maximizing the likelihood function, score matching instead tries to find a $\theta$ such that the gradient of the model’s log likelihood is approximately the same as the gradient of the data distribution’s log likelihood, circumventing the need to work with the normalization constant.
@@ -322,7 +322,7 @@ Secondly, the manifold hypothesis poses a problem. The manifold hypothesis postu
 
 As it turns out, the above-mentioned pitfalls can be bypassed simply by perturbing data points with Gaussian noise. By injecting small amounts of Gaussian noise into the data, the noised data distribution would have full support and is no longer confined to a low-dimensional manifold. When the noise magnitude is sufficiently large, it would also populate low data density regions and thereby improve the accuracy of the score function. 
 
-[Song & Ermon (2019)](https://arxiv.org/abs/1907.05600) proposed to perturb the data with a increasing sequence of isotropic Gaussian noise $\set{\sigma_t}_{t=1}^T$ to obtain a noise-perturbed distribution
+[Song & Ermon (2019)](https://arxiv.org/abs/1907.05600) proposed to perturb the data with a increasing sequence of isotropic Gaussian noise $\{\sigma_t\}_{t=1}^T$ to obtain a noise-perturbed distribution
 
 $$
 p_{\sigma_t}(x) = \int p(x) \mathcal{N} (x_t; x, \sigma_t^2I) \, dx

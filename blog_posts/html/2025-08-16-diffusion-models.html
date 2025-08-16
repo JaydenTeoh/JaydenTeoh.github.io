@@ -84,10 +84,10 @@
                     <figure>
                     <img
                     src="../assets/2025-08-16-diffusion-models/Untitled.png"
-                    alt="Image by Karagiannakos and Adaloglou (2022) ****modified from Ho et al. (2020)" />
+                    alt="Image by Karagiannakos and Adaloglou (2022), modified from Ho et al. (2020)" />
                     <figcaption aria-hidden="true">Image by <a
                     href="https://theaisummer.com/diffusion-models/">Karagiannakos
-                    and Adaloglou (2022)</a> ****modified from <a
+                    and Adaloglou (2022)</a>, modified from <a
                     href="https://arxiv.org/abs/2006.11239">Ho et
                     al. (2020)</a></figcaption>
                     </figure>
@@ -233,11 +233,11 @@
                     to <span class="math inline">\(x_0\)</span> by the
                     model, i.e.</p>
                     <p><span class="math display">\[
-                    \begin{align} \notag
+                    \begin{aligned}
                     p_\theta(x_0) &amp;= \int
-                    p_\theta(x_{0:T})dx_{1:T}  \\\ \notag
+                    p_\theta(x_{0:T})dx_{1:T}  \\
                     L &amp;= -\log(p_\theta(x_0))
-                    \end{align}
+                    \end{aligned}
                     \]</span></p>
                     <p>This objective is unfortunately intractable as it
                     requires us to marginalize over all possible
@@ -418,23 +418,23 @@
                     class="math inline">\(x_t \sim q(x_t |
                     x_0)\)</span>,</p>
                     <p><span class="math display">\[
-                    \begin{align} \notag
+                    \begin{aligned}
                     x_t &amp;= \sqrt{\alpha_t}x_{t-1} + \sqrt{1-
-                    \alpha_t}\epsilon^*_{t-1} \\\ \notag
+                    \alpha_t}\epsilon^*_{t-1} \\
                     &amp;= \sqrt{\alpha_t a_{t-1}}x_{t-2} +
                     \sqrt{\alpha_t - \alpha_t a_{t-1}}\epsilon^*_{t-2} +
-                    \sqrt{1-\alpha_t}\epsilon^*_{t-1} \\\
+                    \sqrt{1-\alpha_t}\epsilon^*_{t-1} \\
                     &amp;=  \sqrt{\alpha_t a_{t-1}}x_{t-2} +
                     \sqrt{\alpha_t - \alpha_t a_{t-1} + 1 -
-                    \alpha_t}\epsilon_{t-2} \\\ \notag
-                    &amp;= \dots \\\ \notag
+                    \alpha_t}\epsilon_{t-2} \\
+                    &amp;= \dots \\
                     &amp;= \sqrt{\prod_{i=1}^t a_i}x_0 +
-                    \sqrt{1-\prod_{i=1}^t a_i}\epsilon_0 \\\ \notag
+                    \sqrt{1-\prod_{i=1}^t a_i}\epsilon_0 \\
                     &amp;= \sqrt{\bar{a}_t}x_0 +
-                    \sqrt{1-\bar{a}_t}\epsilon_0 \\\ \notag
+                    \sqrt{1-\bar{a}_t}\epsilon_0 \\
                     &amp;\sim \mathcal{N}(x_t; \sqrt{\bar{a}_t}x_0,
-                    (1-\bar{a}_t)\mathbf{I}) \\ \notag
-                    \end{align}
+                    (1-\bar{a}_t)\mathbf{I}) \\
+                    \end{aligned}
                     \]</span></p>
                     <p>where <span class="math inline">\(\bar{\alpha}_t
                     = \prod_{i=1}^t \alpha_i\)</span>. We can merge two
@@ -599,9 +599,9 @@
                     <p>We can formulate our variational lower bound loss
                     function as</p>
                     <p><span class="math display">\[
-                    \begin{align}
-                    L &amp;= \notag \mathbb{E}_{x_0, \epsilon} \Big[
-                    \frac{(1 - \alpha_t)^2}{2\sigma_q^2(t)(1 -
+                    \begin{aligned}
+                    L &amp;= \mathbb{E}_{x_0, \epsilon} \Big[ \frac{(1 -
+                    \alpha_t)^2}{2\sigma_q^2(t)(1 -
                     \bar\alpha_t)\alpha_t}\left \lVert{\epsilon}_0 -
                     {\hat\epsilon}_{{\theta}}(x_t, t)\right\rVert^2_2
                     \Big] \\
@@ -610,7 +610,7 @@
                     \bar\alpha_t)\alpha_t}\left \lVert{\epsilon}_0 -
                     {\hat\epsilon}_{{\theta}}(x_t, t)\right\rVert^2_2
                     \Big] \tag{2}
-                    \end{align}
+                    \end{aligned}
                     \]</span></p>
                     <h3 id="simplification-of-loss-term">Simplification
                     of Loss Term</h3>
@@ -658,7 +658,7 @@
                     behind Score Matching</h3>
                     <p>In order to build a likelihood-based generative
                     model, given a dataset <span class="math inline">\(x
-                    = \set{x_1, x_2, \dots, x_N}\)</span>, one learns a
+                    = \{x_1, x_2, \dots, x_N\}\)</span>, one learns a
                     function <span class="math inline">\(f_\theta (x)
                     \in \mathbb{R}\)</span> parameterized by a learnable
                     parameter <span
@@ -735,11 +735,11 @@
                     class="math inline">\(s_\theta (x)\)</span> and the
                     score function:</p>
                     <p><span class="math display">\[
-                    \begin{align}
+                    \begin{aligned}
                     \hat{\theta} &amp;= \argmin_{\theta}
                     \frac{1}{2}\mathbb{E}_{p(x)} \Big[ \|  \nabla_x \log
                     p(x) -  s_\theta(x)  \|^2_2 \Big] \tag{4}
-                    \end{align}
+                    \end{aligned}
                     \]</span></p>
                     <p>Intuitively, the Fisher Divergence measures the
                     squared <span class="math inline">\(\ell_2\)</span>
@@ -926,7 +926,7 @@
                     &amp; Ermon (2019)</a> proposed to perturb the data
                     with a increasing sequence of isotropic Gaussian
                     noise <span
-                    class="math inline">\(\set{\sigma_t}_{t=1}^T\)</span>
+                    class="math inline">\(\{\sigma_t\}_{t=1}^T\)</span>
                     to obtain a noise-perturbed distribution</p>
                     <p><span class="math display">\[
                     p_{\sigma_t}(x) = \int p(x) \mathcal{N} (x_t; x,
