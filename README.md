@@ -3,7 +3,7 @@ This is the source code to Jayden Teoh's public academic website: https://Jayden
 ## Blog
 Added a blog post rendering pipeline on top of the original template.
 
-Step 1: add markdown writeup in the folder `blog_posts/posts`
+Step 1: add markdown writeup in the folder `blog/posts`
 
 Step 2: run
 ```bash
