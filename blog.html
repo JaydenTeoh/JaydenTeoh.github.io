@@ -7,6 +7,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="shortcut icon" href="images/favicon/favicon.ico" type="image/x-icon">
     <link rel="stylesheet" type="text/css" href="stylesheet.css">
+    <!-- Add Markdown rendering library -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@2.3.3/dist/purify.min.js"></script>
   </head>
 
   <body>
@@ -31,24 +34,62 @@
               <td style="padding:2.5%;width:100%;vertical-align:middle">
                 <h1>Blog</h1>
                 <p>Welcome to my blog where I share thoughts on machine learning, research, and other topics.</p>
-                <p>Work in progress...</p>
-                <!-- Add your blog posts here -->
-                <!-- <div style="margin: 2rem 0; padding: 1.5rem; border: 1px solid #dee2e6; border-radius: 8px;">
-                  <h3><a href="#" style="text-decoration: none; color: #333;">Sample Blog Post Title</a></h3>
-                  <p style="color: #666; font-size: 0.9rem;">January 15, 2025</p>
-                  <p>This is a sample blog post. You can add your actual blog content here...</p>
-                </div>
                 
-                <div style="margin: 2rem 0; padding: 1.5rem; border: 1px solid #dee2e6; border-radius: 8px;">
-                  <h3><a href="#" style="text-decoration: none; color: #333;">Another Blog Post</a></h3>
-                  <p style="color: #666; font-size: 0.9rem;">January 10, 2025</p>
-                  <p>Another sample blog post with different content...</p>
-                </div> -->
+                <!-- Blog posts will be loaded here -->
+                <div id="blog-posts"></div>
               </td>
             </tr>
           </tbody></table>
         </td>
       </tr>
     </table>
+
+    <script>
+      // Blog post data
+      const blogPosts = [
+        {
+          title: "Mathematics behind Diffusion Models",
+          date: "2025-08-16",
+          tags: ["machine learning", "research"],
+          excerpt: "Personal notes during my journey of understanding diffusion models.",
+          url: "blog_posts/html/2025-08-16-diffusion-models.html",
+          coverImage: "blog_posts/assets/2025-08-16-diffusion-models/Untitled%203.png" // Add cover image path
+        },
+      ];
+
+      // Function to render blog posts
+      function renderBlogPosts() {
+        const container = document.getElementById('blog-posts');
+        
+        blogPosts.forEach(post => {
+          const postElement = document.createElement('div');
+          postElement.className = 'blog-post';
+          
+          // Create cover image if it exists
+          const coverImageHtml = post.coverImage ? 
+            `<div class="post-cover">
+              <img src="${post.coverImage}" alt="Cover for ${post.title}" class="cover-image">
+            </div>` : '';
+          
+          postElement.innerHTML = `
+            <div class="post-header">
+              ${coverImageHtml}
+              <div class="post-info">
+                <h3><a href="${post.url}" style="text-decoration: none; color: #333;">${post.title}</a></h3>
+                <p style="color: #666; font-size: 0.9rem;">${post.date}</p>
+                <p>${post.excerpt}</p>
+                <div style="margin-top: 0.5rem;">
+                  ${post.tags.map(tag => `<span style="background: #e9ecef; padding: 0.2rem 0.5rem; border-radius: 3px; font-size: 0.8rem; margin-right: 0.5rem;">${tag}</span>`).join('')}
+                </div>
+              </div>
+            </div>
+          `;
+          container.appendChild(postElement);
+        });
+      }
+
+      // Initialize the blog
+      renderBlogPosts();
+    </script>
   </body>
 </html> 
