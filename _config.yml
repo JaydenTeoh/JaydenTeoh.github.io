@@ -1,15 +1,4 @@
 # GitHub Pages configuration
-permalink: /:title/
+permalink: pretty
 pretty_urls:
   trailing_slashes: false
-
-# Exclude blog_posts from Jekyll processing
-exclude:
-  - blog_posts
-  - build_blog.sh
-  - README.md
-
-# Redirects
-redirects:
-  /blog: /blog.html
-  /blog_posts/html/2025-08-16-diffusion-models: /blog_posts/html/2025-08-16-diffusion-models.html 
