@@ -8,6 +8,8 @@ coverImage: "blog/assets/2025-08-16-diffusion-models/Untitled%203.png"
 
 # Mathematics behind Diffusion Models
 
+It was personally quite a struggle to understand how diffusion works. Fortunately, several resources---especially [Luo (2022)](https://arxiv.org/pdf/2208.11970) and [Weng (2021)](https://lilianweng.github.io/posts/2021-07-11-diffusion-models/)---made the learning process a lot easier. In this blog post, I’ve distilled my personal notes from these resources on understanding diffusion models, and I hope this can help others going through the same struggle I did!
+
 ## What are Diffusion Models?
 
 The concept of diffusion-based generative modelling was actually proposed early in 2015 by [Sohl-Dickstein et al.](https://arxiv.org/abs/1503.03585) who were inspired by non-equilibrium thermodynamics. The idea behind it as described by Sohl-Dickstein et al. (2015) is this:
@@ -297,7 +299,7 @@ The first term, $\text{tr}({\nabla_x s_\theta(x)})$, provides information about 
 
 Okay, now that we have trained a score-based model $s_\theta (x) \approx \nabla_x \log p(x)$, how do we even generate samples using it? 
 
-![Image from [Luo, C. (2022)](https://arxiv.org/pdf/2208.11970)](../assets/2025-08-16-diffusion-models/Untitled%203.png)
+![Image from [Luo (2022)](https://arxiv.org/pdf/2208.11970)](../assets/2025-08-16-diffusion-models/Untitled%203.png)
 
 Intuitively, what the model has learnt is a gradient vector field over the density function of $x$ and each point in the field indicates the direction and rate of fastest increase (represented by the arrows in the image above). Langevin dynamics provide a Markov Chain Monte Carlo procedure to sample from $p(x)$ with access to only $\nabla_x \log p(x)$. Starting from any arbitrary point $x_0 \sim \pi(x)$ (represented by blue dots in image above) sampled from some assumed prior distribution $\pi$ (e.g. Gaussian), we can iteratively perform the following updates to climb towards the modes of the distribution (represented by red lines in image above):
 
