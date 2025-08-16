@@ -13,7 +13,6 @@ for file in blog_posts/posts/*.md; do
         pandoc "$file" \
             --template=blog_posts/template.html \
             --output="blog_posts/html/${filename}.html" \
-            --metadata title="$filename" \
             --mathjax \
             --standalone \
             --from markdown+tex_math_dollars+tex_math_single_backslash
