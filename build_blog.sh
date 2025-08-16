@@ -5,6 +5,9 @@ for file in blog/markdown/*.md; do
     if [ -f "$file" ]; then
         filename=$(basename "$file" .md)
         echo "Converting $filename.md to HTML..."
+
+        # Extract tags from front matter and join them
+        tags=$(grep -A 10 '^---' "$file" | grep 'tags:' | sed 's/.*tags: \[\(.*\)\]/\1/' | sed 's/"//g' | sed 's/, /, /g')
         
         # Use pandoc to convert Markdown to HTML with better math support
         pandoc "$file" \
@@ -12,7 +15,8 @@ for file in blog/markdown/*.md; do
             --output="blog/posts/${filename}.html" \
             --mathjax \
             --standalone \
-            --from markdown+tex_math_dollars+tex_math_single_backslash
+            --from markdown+tex_math_dollars+tex_math_single_backslash \
+            --metadata tags="$tags"
     fi
 done
 

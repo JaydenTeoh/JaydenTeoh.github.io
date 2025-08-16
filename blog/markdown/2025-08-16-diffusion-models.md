@@ -3,6 +3,7 @@ title: "Mathematics behind Diffusion Models"
 date: "2025-08-16"
 tags: ["machine learning", "research"]
 excerpt: "Personal notes during my journey of understanding diffusion models."
+coverImage: "blog/assets/2025-08-16-diffusion-models/Untitled%203.png"
 ---
 
 # Mathematics behind Diffusion Models
