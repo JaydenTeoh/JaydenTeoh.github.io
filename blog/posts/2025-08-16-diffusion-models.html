@@ -50,1344 +50,1151 @@ of understanding diffusion models.">
   </head>
 
   <body>
-    <!-- Header navigation -->
-    <header style="background-color: #f8f9fa; border-bottom: 1px solid #dee2e6; padding: 1rem 0;">
+    <!-- Header navigation (same as home page) -->
+    <header style="background-color: #f8f9fa; border-bottom: 1px solid #dee2e6;">
       <nav style="max-width: 800px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center;">
-        <div style="font-size: 1.5rem; font-weight: bold;">
-          <a href="../../index.html" style="text-decoration: none; color: #333;">Jayden Teoh</a>
+        <div style="font-size: 1.5rem; font-weight: bold; padding-left: 1rem;">
+          <a href="index.html" style="text-decoration: none; color: #333;">Jayden Teoh</a>
         </div>
-        <ul style="list-style: none; margin: 0; padding: 0; display: flex; gap: 2rem;">
+        <ul style="list-style: none; margin: 0; padding: 0; display: flex; gap: 2rem; padding-right: 1rem;">
           <li><a href="../../index.html" style="text-decoration: none; color: #333; font-weight: 500;">Home</a></li>
           <li><a href="../../blog.html" style="text-decoration: none; color: #333; font-weight: 500;">Blog</a></li>
         </ul>
       </nav>
     </header>
 
-    <table style="width:100%;max-width:800px;border:0px;border-spacing:0px;border-collapse:separate;margin-right:auto;margin-left:auto;"><tbody>
-      <tr style="padding:0px">
-        <td style="padding:0px">
-          <table style="width:100%;border:0px;border-spacing:0px;border-collapse:separate;margin-right:auto;margin-left:auto;"><tbody>
-            <tr style="padding:0px">
-              <td style="padding:2.5%;width:100%;vertical-align:middle">
-                <div class="blog-post">
-                  <button onclick="window.location.href='../../blog.html'" style="margin-bottom: 1rem; padding: 0.5rem 1rem; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">← Back to Blog</button>
-                  <div class="post-content">
-                    <h1
-                    id="mathematics-behind-diffusion-models">Mathematics
-                    behind Diffusion Models</h1>
-                    <p>It was personally quite a struggle to understand
-                    how diffusion works. Fortunately, several
-                    resources—especially <a
-                    href="https://arxiv.org/pdf/2208.11970">Luo
-                    (2022)</a> and <a
-                    href="https://lilianweng.github.io/posts/2021-07-11-diffusion-models/">Weng
-                    (2021)</a>—made the learning process a lot easier.
-                    In this blog post, I’ve distilled my personal notes
-                    from these resources on understanding diffusion
-                    models, and I hope this can help others going
-                    through the same struggle I did!</p>
-                    <h2 id="what-are-diffusion-models">What are
-                    Diffusion Models?</h2>
-                    <p>The concept of diffusion-based generative
-                    modelling was actually proposed early in 2015 by <a
-                    href="https://arxiv.org/abs/1503.03585">Sohl-Dickstein
-                    et al.</a> who were inspired by non-equilibrium
-                    thermodynamics. The idea behind it as described by
-                    Sohl-Dickstein et al. (2015) is this:</p>
-                    <blockquote>
-                    <p>The essential idea, inspired by non-equilibrium
-                    statistical physics, is to systematically and slowly
-                    destroy structure in a data distribution through an
-                    iterative forward diffusion process. We then learn a
-                    reverse diffusion process that restores structure in
-                    data, yielding a highly flexible and tractable
-                    generative model of the data.</p>
-                    </blockquote>
-                    <p>Half a decade later, <a
-                    href="https://arxiv.org/abs/2006.11239">Ho et
-                    al. (2020)</a> proposed Denoising Diffusion
-                    Probabilistic Models (DDPMs), which improved upon
-                    the previous method by introducing significant
-                    simplifications to the training process. Soon after,
-                    a <a href="https://arxiv.org/pdf/2105.05233">2021
-                    paper by OpenAI</a> demonstrated DDPMs’ superior
-                    performance in image synthesis tasks compared to <a
-                    href="https://www.notion.so/Generative-Adversarial-Networks-ebfba7327d264466b8496a52cf98e453?pvs=21">Generative
-                    Adversarial Networks (GANs)</a>. Since then, notable
-                    diffusion-based generative models have been released
-                    such as <a
-                    href="https://arxiv.org/abs/2102.12092">DALL-E</a>,
-                    <a href="https://arxiv.org/abs/2112.10752">Stable
-                    Diffusion</a> and <a
-                    href="https://arxiv.org/abs/2205.11487">Imagen</a>.
-                    I’ll be covering the concept underlying diffusion
-                    models, mainly focusing on DDPMs.</p>
-                    <p>To better understand this, let’s focus on the
-                    forward diffusion process and reverse diffusion
-                    process separately.</p>
-                    <h3 id="forward-diffusion-process">Forward Diffusion
-                    Process</h3>
-                    <figure>
-                    <img
-                    src="../assets/2025-08-16-diffusion-models/Untitled.png"
-                    alt="Image by Karagiannakos and Adaloglou (2022), modified from Ho et al. (2020)" />
-                    <figcaption aria-hidden="true">Image by <a
-                    href="https://theaisummer.com/diffusion-models/">Karagiannakos
-                    and Adaloglou (2022)</a>, modified from <a
-                    href="https://arxiv.org/abs/2006.11239">Ho et
-                    al. (2020)</a></figcaption>
-                    </figure>
-                    <p>In the forward trajectory, we want to gradually
-                    “corrupt” the training images. As such, we
-                    iteratively apply Gaussian noise to images sampled
-                    from the true data distribution, i.e. <span
-                    class="math inline">\(x_0 \sim q(x)\)</span>, in
-                    over <span class="math inline">\(T\)</span> steps to
-                    produce a sequence of noisy samples <span
-                    class="math inline">\(x_0, x_1, \dots ,
-                    x_T\)</span>.</p>
-                    <p>The diffusion process is fixed to a Markov chain
-                    which simply means that each step is only dependent
-                    on the previous one (memoryless). Specifically, at
-                    each step, we apply Gaussian noise with variance
-                    <span class="math inline">\(\beta_T \in
-                    (0,1)\)</span> to <span
-                    class="math inline">\(x_{t-1}\)</span> to produce a
-                    latent variable <span
-                    class="math inline">\(x_t\)</span> of the same
-                    dimension. As such, each transition is parameterized
-                    as a diagonal Gaussian distribution that uses the
-                    output of the previous state as its mean:</p>
-                    <p><span class="math display">\[
-                    q(x_t|x_{t-1}) =
-                    \mathcal{N}(x_t;\sqrt{1-\beta_t}x_{t-1},
-                    \beta_t\mathbf{I})
-                    \]</span></p>
-                    <p>Note:</p>
-                    <ul>
-                    <li><span class="math inline">\(\beta_T\)</span> is
-                    known as the “diffusion rate” and it can be sampled
-                    according to a variance schedule <span
-                    class="math inline">\(\beta_1, \dots,
-                    \beta_T\)</span>, which means the amount of noise
-                    applied at each time step is not necessarily
-                    constant</li>
-                    <li><span class="math inline">\(\mathbf{I}\)</span>
-                    is the identity matrix. We use the identity matrix
-                    because our images are multi-dimensional and we want
-                    each dimension to be independent of each other</li>
-                    </ul>
-                    <p>The posterior after <span
-                    class="math inline">\(T\)</span> steps, conditioned
-                    on the original data distribution, can be
-                    represented as a product of single step conditionals
-                    as such:</p>
-                    <p><span class="math display">\[
-                    q(x_{1:T} | x_0) = \prod^T_{t=1} q(x_t | x_{t-1})
-                    \]</span></p>
-                    <p>As <span class="math inline">\(T\rightarrow
-                    \infty\)</span>, <span
-                    class="math inline">\(x_T\)</span> is equivalent to
-                    an isotropic Gaussian distribution, losing all
-                    information about the original sample
-                    distribution.</p>
-                    <h3 id="reverse-diffusion-process">Reverse Diffusion
-                    Process</h3>
-                    <figure>
-                    <img
-                    src="../assets/2025-08-16-diffusion-models/Untitled%201.png"
-                    alt="Image by Karagiannakos and Adaloglou (2022), modified from Ho et al. (2020)" />
-                    <figcaption aria-hidden="true">Image by <a
-                    href="https://theaisummer.com/diffusion-models/">Karagiannakos
-                    and Adaloglou (2022)</a>, modified from <a
-                    href="https://arxiv.org/abs/2006.11239">Ho et
-                    al. (2020)</a></figcaption>
-                    </figure>
-                    <p>In the reverse process, we aim to learn a model
-                    that can denoise the pure Gaussian noise, i.e. <span
-                    class="math inline">\(x_T \sim \mathcal{N}(x_T;
-                    0,\mathbf{I})\)</span>, to recover the original
-                    sample image. As mentioned by Sohl-Dickstein et
-                    al. (2015),</p>
-                    <blockquote>
-                    <p>Estimating small perturbations is more tractable
-                    than explicitly describing the full distribution
-                    with a single, non-analytically-normalizable,
-                    potential function.</p>
-                    </blockquote>
-                    <p>Directly describing the original distribution
-                    from the pure Gaussian noise can be intractable.
-                    Rather, what we can do is train a model <span
-                    class="math inline">\(p_\theta\)</span> (e.g. using
-                    a neural network) to approximate <span
-                    class="math inline">\(q(x_{t-1}|x_{t})\)</span> such
-                    that we can iteratively recover the original data
-                    distribution in small time steps. Therefore, the
-                    reverse trajectory can also be formulated as a
-                    Markov chain and can be represented as such:</p>
-                    <p><span class="math display">\[
-                    p_\theta(x_{0:T}) = p(x_T) \prod^T_{t=1}
-                    p_\theta(x_{t-1} | x_t)
-                    \]</span></p>
-                    <p>where <span class="math inline">\(p(x_T) =
-                    \mathcal{N}(x_T; 0,\mathbf{I})\)</span>.</p>
-                    <p>Moreover, since <span
-                    class="math inline">\(q(x_t|x_{t-1})\)</span>
-                    follows a Gaussian distribution, if <span
-                    class="math inline">\(\beta_t\)</span> is small,
-                    then the reversal of the diffusion process has the
-                    identical functional form as the forward process <a
-                    href="https://www.semanticscholar.org/paper/On-the-Theory-of-Stochastic-Processes%2C-with-to-Feller/4cdcf495232f3ec44183dc74cd8eca4b44c2de64">(Feller,
-                    1949)</a>, which means that <span
-                    class="math inline">\(q(x_{t-1}|x_{t})\)</span> will
-                    also be Gaussian. Therefore, to approximate <span
-                    class="math inline">\(q(x_{t-1}|x_{t})\)</span>, our
-                    model <span class="math inline">\(p_\theta\)</span>
-                    only needs to estimate the Gaussian parameters <span
-                    class="math inline">\(\mu_\theta(x_t, t)\)</span>
-                    and <span class="math inline">\(\Sigma_\theta(x_t,
-                    t)\)</span> for timestep <span
-                    class="math inline">\(t\)</span>.</p>
-                    <p><span class="math display">\[
-                    p_\theta(x_{t-1} | x_t) = \mathcal{N}(x_{t-1};
-                    \mu_\theta(x_t, t), \Sigma_\theta(x_t, t))
-                    \]</span></p>
-                    <p>Note:</p>
-                    <ul>
-                    <li><span class="math inline">\(p_\theta\)</span>
-                    not only takes in <span
-                    class="math inline">\(x_t\)</span>, but also <span
-                    class="math inline">\(t\)</span>, as inputs because
-                    each time step is associated with different noise
-                    levels.</li>
-                    </ul>
-                    <h2
-                    id="parameterisation-of-diffusion-model">Parameterisation
-                    of Diffusion Model</h2>
-                    <p>In summary, we have defined the forward
-                    trajectory as a steady noisification of the sample
-                    distribution over time and the reverse trajectory as
-                    “tracing back” these steps to recover the original
-                    distribution.</p>
-                    <p>But how exactly do we teach a neural network (or
-                    other function approximation methods) to approximate
-                    the conditional probabilities for each time step in
-                    the reverse trajectory? To do so, we need to define
-                    a loss function.</p>
-                    <p>Naively, we can use a maximum likelihood
-                    objective where we maximize the likelihood assigned
-                    to <span class="math inline">\(x_0\)</span> by the
-                    model, i.e.</p>
-                    <p><span class="math display">\[
-                    \begin{aligned}
-                    p_\theta(x_0) &amp;= \int
-                    p_\theta(x_{0:T})dx_{1:T}  \\
-                    L &amp;= -\log(p_\theta(x_0))
-                    \end{aligned}
-                    \]</span></p>
-                    <p>This objective is unfortunately intractable as it
-                    requires us to marginalize over all possible
-                    trajectories we could have taken from <span
-                    class="math inline">\(x_{1:T}\)</span>. Rather, we
-                    can take inspiration from Variational Autoencoders
-                    (VAE) and reformulate the training objective using a
-                    variational lower bound (VLB), also known as
-                    <strong>“evidence lower bound” (ELBO)</strong>.</p>
-                    <p><span class="math display">\[
-                    \begin{aligned}\log p_\theta(x_0)
-                    &amp;\geq \log p_\theta(x_0) - D_\text{KL}(q(x_{1:T}
-                    | x_0) \| p_\theta(x_{1:T} | x_0) ) \\
-                    &amp;= \log p_\theta(x_0) - \mathbb{E}_{q(x_{1:T} |
-                    x_0)} \Big[ \log\frac{q(x_{1:T} |
-                    x_0)}{\frac{p_\theta(x_{0:T})}{p_\theta(x_0)}} \Big]
-                    \\
-                    &amp;= \log p_\theta(x_0) - \mathbb{E}_{q(x_{1:T} |
-                    x_0)} \Big[ \log\frac{q(x_{1:T} |
-                    x_0)}{p_\theta(x_{0:T})} + \log p_\theta(x_0) \Big]
-                    \\
-                    &amp;= - \mathbb{E}_{q(x_{1:T} | x_0)} \Big[
-                    \log\frac{q(x_{1:T} |
-                    x_0)}{p_\theta(x_{0:T})}  \Big] \\
-                    &amp;= \mathbb{E}_{q(x_{1:T} | x_0)} \Big[\log
-                    \frac{p_\theta(x_{0:T})}{q(x_{1:T} | x_0)}  \Big]
-                    \end{aligned}
-                    \]</span></p>
-                    <p>Therefore, the last term becomes the VLB of the
-                    likelihood assigned to <span
-                    class="math inline">\(x_0\)</span>, a proxy
-                    objective to maximize. However, this VLB term is
-                    still not tractable so further reformulations is
-                    needed. Before we proceed, it is important to note
-                    that we can rewrite each transition as <span
-                    class="math inline">\(q(x_{t}|x_{t-1}) =
-                    q(x_{t}|x_{t-1}, x_0)\)</span>, where the extra
-                    conditioning term is superfluous due to the Markov
-                    property. Using Bayes’ rule, we can rewrite each
-                    transition as:</p>
-                    <p><span class="math display">\[
-                    q(x_{t}|x_{t-1}, x_0) = \frac{q(x_{t-1}|x_{t},
-                    x_0)q(x_{t}|x_0)}{q(x_{t-1}|x_0)}
-                    \]</span></p>
-                    <p>This trick will be useful for reducing the
-                    variance and derive a more elegant variational lower
-                    bound expression. Continuing from where we left off
-                    earlier, we have:</p>
-                    <p><span class="math display">\[
-                    \begin{aligned}\log p_\theta(x_0)
-                    &amp;\geq\mathbb{E}_{q(x_{1:T} | x_0)} \Big[\log
-                    \frac{p_\theta(x_{0:T})}{q(x_{1:T} | x_0)}  \Big] \\
-                    &amp;= \mathbb{E}_{q(x_{1:T} | x_0)} \Big[\log
-                    \frac{p_\theta(x_{T})\prod_{t=1}^T p_\theta(x_{t-1}
-                    | x_{t})}{\prod_{t=1}^T q(x_{t} | x_{t-1})}  \Big]
-                    \\
-                    &amp;= \mathbb{E}_{q(x_{1:T} | x_0)} \Big[\log
-                    \frac{p_\theta(x_{T})p_\theta(x_0 |
-                    x_1)\prod_{t=2}^T p_\theta(x_{t-1} | x_{t})}{q(x_1
-                    |x_0)\prod_{t=2}^T q(x_{t} | x_{t-1})}  \Big] \\
-                    &amp;= \mathbb{E}_{q(x_{1:T} | x_0)} \Big[\log
-                    \frac{p_\theta(x_{T})p_\theta(x_0 |
-                    x_1)\prod_{t=2}^T p_\theta(x_{t-1} | x_{t})}{q(x_1
-                    |x_0)\prod_{t=2}^T q(x_{t} | x_{t-1}, x_0)}  \Big]
-                    \\
-                    &amp;= \mathbb{E}_{q(x_{1:T} | x_0)} \Big[\log
-                    \frac{p_\theta(x_{T})p_\theta(x_0 | x_1)}{q(x_1
-                    |x_0)} + \log\prod_{t=2}^T \frac{p_\theta(x_{t-1} |
-                    x_{t})}{q(x_{t} | x_{t-1}, x_0)}  \Big] \\
-                    &amp;= \mathbb{E}_{q(x_{1:T} | x_0)} \Big[\log
-                    \frac{p_\theta(x_{T})p_\theta(x_0 | x_1)}{q(x_1
-                    |x_0)} + \log\prod_{t=2}^T \frac{p_\theta(x_{t-1} |
-                    x_{t})}{\frac{q(x_{t-1}|x_{t},
-                    x_0)q(x_{t}|x_0)}{q(x_{t-1}|x_0)}}  \Big] \\
-                    &amp;= \mathbb{E}_{q(x_{1:T} | x_0)} \Big[\log
-                    \frac{p_\theta(x_{T})p_\theta(x_0 | x_1)}{q(x_1
-                    |x_0)} + \log\prod_{t=2}^T
-                    \frac{\cancel{q(x_{t-1}|x_0)}}{\cancel{q(x_{t}|x_0)}}
-                    + \log\prod_{t=2}^T \frac{p_\theta(x_{t-1} |
-                    x_{t})}{{q(x_{t-1}|x_{t}, x_0)}}  \Big] \\
-                    &amp;= \mathbb{E}_{q(x_{1:T} | x_0)} \Big[\log
-                    \frac{p_\theta(x_{T})p_\theta(x_0 |
-                    x_1)}{\cancel{q(x_1 |x_0)}} + \log
-                    \frac{\cancel{q(x_{1}|x_0)}}{{q(x_{T}|x_0)}} +
-                    \log\prod_{t=2}^T \frac{p_\theta(x_{t-1} |
-                    x_{t})}{{q(x_{t-1}|x_{t}, x_0)}}  \Big] \\
-                    &amp;= \mathbb{E}_{q(x_{1:T} | x_0)} \Big[\log
-                    \frac{p_\theta(x_{T})p_\theta(x_0 |
-                    x_1)}{{q(x_{T}|x_0)}} + \log\sum_{t=2}^T
-                    \frac{p_\theta(x_{t-1} | x_{t})}{{q(x_{t-1}|x_{t},
-                    x_0)}}  \Big] \\
-                    &amp;= \mathbb{E}_{q(x_{1:T} | x_0)}[\log
-                    p_\theta(x_0 | x_1)] + \mathbb{E}_{q(x_{1:T} |
-                    x_0)}\Big[\log
-                    \frac{p_\theta(x_{T})}{{q(x_{T}|x_0)}} \Big] +
-                    \log\sum_{t=2}^T \mathbb{E}_{q(x_{1:T} | x_0)}
-                    \Big[\frac{p_\theta(x_{t-1} |
-                    x_{t})}{{q(x_{t-1}|x_{t}, x_0)}}  \Big] \\
-                    &amp;= \mathbb{E}_{q(x_{1} | x_0)}[\log p_\theta(x_0
-                    | x_1)] + \mathbb{E}_{q(x_{T} | x_0)}\Big[\log
-                    \frac{p_\theta(x_{T})}{{q(x_{T}|x_0)}} \Big] +
-                    \log\sum_{t=2}^T \mathbb{E}_{q(x_{t}, x_{t-1} |
-                    x_0)} \Big[\frac{p_\theta(x_{t-1} |
-                    x_{t})}{{q(x_{t-1}|x_{t}, x_0)}}  \Big] \\
-                    &amp;= \underbrace{\mathbb{E}_{q(x_{1} | x_0)}[\log
-                    p_\theta(x_0 | x_1)]}_{\text{reconstruction term}} -
-                    \underbrace{D_\text{KL} (q(x_{T}|x_0) \parallel
-                    p_\theta(x_{T}))}_{\text{prior matching
-                    term}}  -\sum_{t=2}^T \mathbb{E}_{q(x_{t} | x_0)}
-                    [\underbrace{D_\text{KL} ({q(x_{t-1}|x_{t}, x_0)}
-                    \parallel p_\theta(x_{t-1} |
-                    x_{t}))}_{\text{denoising matching term}}]   \\
-                    \end{aligned}
-                    \]</span></p>
-                    <ul>
-                    <li><span class="math inline">\(D_\text{KL}
-                    (q(x_{T}|x_0) \parallel p_\theta(x_{T}))\)</span> is
-                    a constant because <span
-                    class="math inline">\(q\)</span> has no trainable
-                    parameters and <span
-                    class="math inline">\(p_\theta(x_T)\)</span> is a
-                    standard Gaussian. Therefore, we can ignore it.</li>
-                    <li><span class="math inline">\(\mathbb{E}_{q(x_{1}
-                    | x_0)}[\log p_\theta(x_0 | x_1)]\)</span> is the
-                    reconstruction term which predicts the log
-                    likelihood of the original data sample given the
-                    first-step latent. Since the original data
-                    distribution may not be Gaussian, we cannot compute
-                    this in closed form. We can approximate and optimise
-                    this term using a Monte Carlo estimate.</li>
-                    <li><span class="math inline">\(D_\text{KL}
-                    ({q(x_{t-1}|x_{t}, x_0)} \parallel p_\theta(x_{t-1}
-                    | x_{t}))\)</span> measures the KL divergence
-                    between the learnt transition step <span
-                    class="math inline">\(p_\theta(x_{t-1} |
-                    x_{t})\)</span> and the ground-truth denoising
-                    transition step <span
-                    class="math inline">\(q(x_{t-1}|x_{t},
-                    x_0)\)</span>. <span
-                    class="math inline">\(q(x_{t-1}|x_{t}, x_0)\)</span>
-                    can act as a ground-truth signal because it defines
-                    how to denoise a noisy image <span
-                    class="math inline">\(x_t\)</span> with access to
-                    what the final, completely denoised image <span
-                    class="math inline">\(x_0\)</span> should be.</li>
-                    </ul>
-                    <p>Given that the denoising matching term is the
-                    only term we are interested in, to maximise the
-                    likelihood objective, we will need to minimise the
-                    KL divergence between the learnt denoising step and
-                    ground-truth denoising step. By Bayes’ Rule, we can
-                    reformulate the ground-truth denoising transition
-                    step as such:</p>
-                    <p><span class="math display">\[
-                    q(x_{t-1}|x_{t}, x_0) = \frac{q(x_{t}|x_{t-1},
-                    x_0)q(x_{t-1}|x_0)}{q(x_{t}| x_0)}
-                    \]</span></p>
-                    <p>Using our definition of the forward transition
-                    step and the Markov property, we already know that
-                    <span class="math inline">\(q(x_{t}|x_{t-1}, x_0) =
-                    q(x_{t}|x_{t-1}) =
-                    \mathcal{N}(x_t;\sqrt{1-\beta_t}x_{t-1},
-                    \beta_t\mathbf{I})\)</span>. Let <span
-                    class="math inline">\(\alpha_t = 1 -
-                    \beta_t\)</span>, under the reparameterisation trick
-                    used in VAEs, samples <span
-                    class="math inline">\(x_t \sim
-                    q(x_t|x_{t-1})\)</span> can be rewritten as:</p>
-                    <p><span class="math display">\[
-                    x_t = \sqrt{\alpha_t}x_{t-1} + \sqrt{1-
-                    \alpha_t}\epsilon
-                    \]</span></p>
-                    <p>where <span class="math inline">\(\epsilon \sim
-                    \mathcal{N}(\epsilon; 0, \mathbf{I})\)</span>. To
-                    express <span class="math inline">\(q(x_{t}|
-                    x_0)\)</span> in closed form, we recursively apply
-                    the reparameterisation trick. That is, for any <span
-                    class="math inline">\(x_t \sim q(x_t |
-                    x_0)\)</span>,</p>
-                    <p><span class="math display">\[
-                    \begin{aligned}
-                    x_t &amp;= \sqrt{\alpha_t}x_{t-1} + \sqrt{1-
-                    \alpha_t}\epsilon^*_{t-1} \\
-                    &amp;= \sqrt{\alpha_t a_{t-1}}x_{t-2} +
-                    \sqrt{\alpha_t - \alpha_t a_{t-1}}\epsilon^*_{t-2} +
-                    \sqrt{1-\alpha_t}\epsilon^*_{t-1} \\
-                    &amp;=  \sqrt{\alpha_t a_{t-1}}x_{t-2} +
-                    \sqrt{\alpha_t - \alpha_t a_{t-1} + 1 -
-                    \alpha_t}\epsilon_{t-2} \\
-                    &amp;= \dots \\
-                    &amp;= \sqrt{\prod_{i=1}^t a_i}x_0 +
-                    \sqrt{1-\prod_{i=1}^t a_i}\epsilon_0 \\
-                    &amp;= \sqrt{\bar{a}_t}x_0 +
-                    \sqrt{1-\bar{a}_t}\epsilon_0 \\
-                    &amp;\sim \mathcal{N}(x_t; \sqrt{\bar{a}_t}x_0,
-                    (1-\bar{a}_t)\mathbf{I}) \\
-                    \end{aligned}
-                    \]</span></p>
-                    <p>where <span class="math inline">\(\bar{\alpha}_t
-                    = \prod_{i=1}^t \alpha_i\)</span>. We can merge two
-                    Gaussians in (1) since the sum of two independent
-                    Gaussian random variables is a Gaussian with mean
-                    being the sum of the two means and variance being
-                    the sum of the two variances. We have therefore
-                    derived <span class="math inline">\(q(x_{t}|
-                    x_0)\)</span> and we can reuse the parameterization
-                    trick to yield <span
-                    class="math inline">\(q(x_{t-1}| x_0) =
-                    \mathcal{N}(x_{t-1}; \sqrt{\bar{\alpha}_{t-1}}x_0,
-                    (1-\bar{\alpha}_{t-1})\mathbf{I})\)</span>.
-                    Substituting both expressions into the Bayes rule
-                    expansion of the ground truth denoising step
-                    (intermediate steps have been omitted for
-                    brevity):</p>
-                    <p><span class="math display">\[
-                    \begin{aligned}
-                    q(x_{t-1}|x_{t}, x_0)
-                    &amp;= \frac{q(x_{t}|x_{t-1},
-                    x_0)q(x_{t-1}|x_0)}{q(x_{t}| x_0)}\\
-                    &amp;= {\frac{\mathcal{N}(x_{t} ; \sqrt{\alpha_t}
-                    x_{t-1}, (1 -
-                    \alpha_t)\textbf{I})\mathcal{N}(x_{t-1} ;
-                    \sqrt{\bar\alpha_{t-1}}x_0, (1 - \bar\alpha_{t-1})
-                    \textbf{I})}{\mathcal{N}(x_{t} ;
-                    \sqrt{\bar\alpha_{t}}x_0, (1 -
-                    \bar\alpha_{t})\textbf{I})}}\\
-                    &amp;\propto {\text{exp}\left\{-\left[\frac{(x_{t} -
-                    \sqrt{\alpha_t} x_{t-1})^2}{2(1 - \alpha_t)} +
-                    \frac{(x_{t-1} - \sqrt{\bar\alpha_{t-1}} x_0)^2}{2(1
-                    - \bar\alpha_{t-1})} - \frac{(x_{t} -
-                    \sqrt{\bar\alpha_t} x_{0})^2}{2(1 - \bar\alpha_t)}
-                    \right]\right\}}\\
-                    &amp;= \dots \\
-                    &amp;\propto {\mathcal{N}(x_{t-1} ;}
-                    \underbrace{{\frac{\sqrt{\alpha_t}(1-\bar\alpha_{t-1})x_{t}
-                    + \sqrt{\bar\alpha_{t-1}}(1-\alpha_t)x_0}{1
-                    -\bar\alpha_{t}}}}_{\mu_q(x_t, x_0)},
-                    \underbrace{{\frac{(1 - \alpha_t)(1 -
-                    \bar\alpha_{t-1})}{1
-                    -\bar\alpha_{t}}\textbf{I}}}_{\bm{\Sigma}_q(t)})
-                    \end{aligned}
-                    \]</span></p>
-                    <p>We have therefore shown that at each step, <span
-                    class="math inline">\(x_{t-1} \sim q(x_{t-1}|x_{t},
-                    x_0)\)</span> follows a normal distribution with
-                    mean <span class="math inline">\(\mu_q(x_t,
-                    x_0)\)</span>, a function of <span
-                    class="math inline">\(x_t\)</span> and <span
-                    class="math inline">\(x_0\)</span>, and variance
-                    <span class="math inline">\(\Sigma_q(t)\)</span>, a
-                    function of <span
-                    class="math inline">\(\alpha\)</span> coefficients.
-                    We can further leverage the reparameterization trick
-                    to express <span class="math inline">\(x_0\)</span>
-                    as <span
-                    class="math inline">\(\epsilon_0\)</span>:</p>
-                    <p><span class="math display">\[
-                    \begin{aligned}
-                    \mu_q(x_t, x_0) &amp;=
-                    {\frac{\sqrt{\alpha_t}(1-\bar\alpha_{t-1})x_{t} +
-                    \sqrt{\bar\alpha_{t-1}}(1-\alpha_t)x_0}{1
-                    -\bar\alpha_{t}}} \\
-                    &amp;=
-                    {\frac{\sqrt{\alpha_t}(1-\bar\alpha_{t-1})x_{t} +
-                    \sqrt{\bar\alpha_{t-1}}(1-\alpha_t)\frac{x_t -
-                    \sqrt{1-\bar{\alpha}_t}\epsilon_0}{\sqrt{\bar{\alpha}_t}}}{1
-                    -\bar\alpha_{t}}} \\
-                    &amp;= \dots \\
-                    &amp;= \frac{1}{\sqrt{\alpha_t}}x_t -
-                    \frac{1-\alpha_t}{\sqrt{1-\bar{\alpha}_t}\sqrt{\alpha_t}}\epsilon_0
-                    \end{aligned}
-                    \]</span></p>
-                    <p>Following <a
-                    href="https://arxiv.org/abs/2006.11239">Ho et
-                    al. (2020)</a>, we can set <span
-                    class="math inline">\(\Sigma_q(t)\)</span> as a
-                    constant at each timestep by modelling the <span
-                    class="math inline">\(\alpha\)</span> coefficients
-                    as fixed hyperparameters. With that, we can rewrite
-                    the variance equation as <span
-                    class="math inline">\(\Sigma_q(t) =
-                    \sigma^2_q(t)\mathbf{I}\)</span>, where:</p>
-                    <p><span class="math display">\[
-                    \sigma^2_q(t) = \frac{(1 - \alpha_t)(1 -
-                    \bar\alpha_{t-1})}{1 -\bar\alpha_{t}}
-                    \]</span></p>
-                    <p>As we have kept the variance constant, minimizing
-                    the KL divergence is simply minimizing the
-                    difference between <span
-                    class="math inline">\(\mu_q(x_t, x_0)\)</span> and
-                    <span class="math inline">\(\mu_\theta(x_t,
-                    t)\)</span>. Note that we have no choice but to only
-                    parameterize the mean of the learnt model <span
-                    class="math inline">\(\mu_\theta(x_t, t)\)</span> as
-                    a function of <span
-                    class="math inline">\(x_t\)</span> since <span
-                    class="math inline">\(p_\theta(x_{t-1}|x_t)\)</span>
-                    does not depend on <span
-                    class="math inline">\(x_0\)</span> (due to Markov
-                    property).</p>
-                    <p>The true denoising transition mean is expressed
-                    as:</p>
-                    <p><span class="math display">\[
-                    \mu_q(x_t, x_0) = \frac{1}{\sqrt{\alpha_t}}x_t -
-                    \frac{1-\alpha_t}{\sqrt{1-\bar{\alpha}_t}\sqrt{\alpha_t}}\epsilon_0
-                    \]</span></p>
-                    <p>To optimize the model’s mean <span
-                    class="math inline">\(\mu_\theta(x_t, t)\)</span>,
-                    we set it to have the following form:</p>
-                    <p><span class="math display">\[
-                    \mu_\theta(x_t, t) = \frac{1}{\sqrt{\alpha_t}}x_t -
-                    \frac{1-\alpha_t}{\sqrt{1-\bar{\alpha}_t}\sqrt{\alpha_t}}\hat{\epsilon_\theta}(x_t,
-                    t)
-                    \]</span></p>
-                    <p>where <span
-                    class="math inline">\(\hat{\epsilon}_\theta(x_t,
-                    t)\)</span> is parameterized by a neural network
-                    that seeks to predict the source noise <span
-                    class="math inline">\(\epsilon_0 \sim
-                    \mathcal{N}(\epsilon; 0, \mathbf{I})\)</span> that
-                    lead to <span class="math inline">\(x_t\)</span>
-                    from <span class="math inline">\(x_0\)</span>. As
-                    such, the optimization problem simplifies to:</p>
-                    <p><span class="math display">\[
-                    \begin{aligned}
-                    &amp;\quad \argmin_{{\theta}}
-                    D_\text{KL}({q(x_{t-1}|x_t,
-                    x_0)}\parallel{p_{{\theta}}(x_{t-1}|x_t)}) \\
-                    &amp;= \argmin_{{\theta}}
-                    D_\text{KL}({\mathcal{N}\left(x_{t-1};
-                    {\mu}_q,{\Sigma}_q\left(t\right)\right)} \parallel
-                    {\mathcal{N}\left(x_{t-1};
-                    {\mu}_{{\theta}},{\Sigma}_q\left(t\right)\right)})\\
-                    &amp;=\argmin_{{\theta}}\frac{1}{2\sigma_q^2(t)}\left[\left\lVert\frac{1}{\sqrt{\alpha_t}}x_t
-                    - \frac{1 - \alpha_t}{\sqrt{1 -
-                    \bar\alpha_t}\sqrt{\alpha_t}}{\hat\epsilon}_{{\theta}}(x_t,
-                    t) -
-                    \frac{1}{\sqrt{\alpha_t}}x_t + \frac{1 -
-                    \alpha_t}{\sqrt{1 -
-                    \bar\alpha_t}\sqrt{\alpha_t}}{\epsilon}_0\right\rVert^2_2\right]\\
-                    &amp;=\argmin_{{\theta}}\frac{1}{2\sigma_q^2(t)}\left[\left\lVert
-                    \frac{1 - \alpha_t}{\sqrt{1 -
-                    \bar\alpha_t}\sqrt{\alpha_t}}{\epsilon}_0 - \frac{1
-                    - \alpha_t}{\sqrt{1 -
-                    \bar\alpha_t}\sqrt{\alpha_t}}{\hat\epsilon}_{{\theta}}(x_t,
-                    t)\right\rVert^2_2\right]\\
-                    &amp;=\argmin_{{\theta}}\frac{1}{2\sigma_q^2(t)}\left[\left\lVert
-                    \frac{1 - \alpha_t}{\sqrt{1 -
-                    \bar\alpha_t}\sqrt{\alpha_t}}({\epsilon}_0 -
-                    {\hat\epsilon}_{{\theta}}(x_t,
-                    t))\right\rVert^2_2\right]\\
-                    &amp;=\argmin_{{\theta}}\frac{1}{2\sigma_q^2(t)}\frac{(1
-                    - \alpha_t)^2}{(1 -
-                    \bar\alpha_t)\alpha_t}\left[\left\lVert{\epsilon}_0
-                    - {\hat\epsilon}_{{\theta}}(x_t,
-                    t)\right\rVert^2_2\right]
-                    \end{aligned}
-                    \]</span></p>
-                    <p>We can formulate our variational lower bound loss
-                    function as</p>
-                    <p><span class="math display">\[
-                    \begin{aligned}
-                    L &amp;= \mathbb{E}_{x_0, \epsilon} \Big[ \frac{(1 -
-                    \alpha_t)^2}{2\sigma_q^2(t)(1 -
-                    \bar\alpha_t)\alpha_t}\left \lVert{\epsilon}_0 -
-                    {\hat\epsilon}_{{\theta}}(x_t, t)\right\rVert^2_2
-                    \Big] \\
-                    &amp;= \mathbb{E}_{x_0, \epsilon} \Big[
-                    \frac{\beta_t^2}{2\sigma_q^2(t)(1 -
-                    \bar\alpha_t)\alpha_t}\left \lVert{\epsilon}_0 -
-                    {\hat\epsilon}_{{\theta}}(x_t, t)\right\rVert^2_2
-                    \Big] \tag{2}
-                    \end{aligned}
-                    \]</span></p>
-                    <h3 id="simplification-of-loss-term">Simplification
-                    of Loss Term</h3>
-                    <p>Empirically, <a
-                    href="https://arxiv.org/abs/2006.11239">Ho et
-                    al. (2020)</a> found that a simplified loss function
-                    without the weighting term performs better:</p>
-                    <p><span class="math display">\[
-                    L_{\text{simple}}  = \mathbb{E}_{x_0, \epsilon}
-                    \Big[\left \lVert{\epsilon}_0 -
-                    {\hat\epsilon}_{{\theta}}(x_t, t)\right\rVert^2_2
-                    \Big]
-                    \]</span></p>
-                    <p>which is basically just the <strong>mean squared
-                    error between the noise added in the forward process
-                    and the noise predicted by the model</strong>!</p>
-                    <figure>
-                    <img
-                    src="../assets/2025-08-16-diffusion-models/Untitled%202.png"
-                    alt="Training and sample algorithm from Ho et al. (2020)" />
-                    <figcaption aria-hidden="true">Training and sample
-                    algorithm from <a
-                    href="https://arxiv.org/abs/2006.11239">Ho et
-                    al. (2020)</a></figcaption>
-                    </figure>
-                    <h2 id="relation-to-score-matching">Relation to
-                    Score Matching</h2>
-                    <p>So far, I have been covering generative models
-                    via the “likelihood-based” objective, which seeks to
-                    learn a model that assigns a high likelihood to the
-                    observed data samples. However, there is another
-                    “score-based” interpretation which seeks to model
-                    the gradient of the log probability density
-                    function, a quantity known as the
-                    <em><strong>(Stein)</strong> <strong>score
-                    function</strong></em>. Score-based generative
-                    modelling is another rabbit hole on its own, but my
-                    goal here today is just to highlight the parallels
-                    between denoising diffusion generative modelling and
-                    denoising score matching in score-based generative
-                    modelling. It would be helpful to understand this
-                    before getting into conditional diffusion models in
-                    the later section.</p>
-                    <h3 id="motivation-behind-score-matching">Motivation
-                    behind Score Matching</h3>
-                    <p>In order to build a likelihood-based generative
-                    model, given a dataset <span class="math inline">\(x
-                    = \{x_1, x_2, \dots, x_N\}\)</span>, one learns a
-                    function <span class="math inline">\(f_\theta (x)
-                    \in \mathbb{R}\)</span> parameterized by a learnable
-                    parameter <span
-                    class="math inline">\(\theta\)</span> that best
-                    explains the observed data. More specifically, our
-                    goal would be to find the <span
-                    class="math inline">\(\theta\)</span> that maximises
-                    the log probability density function (or probability
-                    mass function in the discrete case) of the data:</p>
-                    <p><span class="math display">\[
-                    \max_\theta\sum_{i=1}^N\log p_\theta(x_i)
-                    \]</span></p>
-                    <p>As you know from Probability Theory 101, for
-                    <span class="math inline">\(p_\theta (x)\)</span> to
-                    be a valid p.d.f., we need to make sure it is
-                    normalized such that <span
-                    class="math inline">\(\int p_\theta (x) \, dx =
-                    1\)</span>. We can define a valid p.d.f. via</p>
-                    <p><span class="math display">\[
-                    p_\theta (x) = \frac{e^{-f_\theta(x)}}{Z_\theta}
-                    \tag{3}
-                    \]</span></p>
-                    <p>where <span class="math inline">\(Z_\theta = \int
-                    e^{-f_\theta(x)}dx\)</span> is the normalizing
-                    constant and <span class="math inline">\(f_\theta
-                    (x)\)</span> in this case is often called the energy
-                    function.</p>
-                    <p>The fundamental limitation behind
-                    likelihood-based models is that can be intractable
-                    to compute the normalizing constant <span
-                    class="math inline">\(Z_\theta\)</span>, especially
-                    if <span class="math inline">\(x\)</span> is usually
-                    high-dimensional and <span
-                    class="math inline">\(f_\theta (x)\)</span> is
-                    highly complex and nonlinear. One way to avoid
-                    computing <span
-                    class="math inline">\(Z_\theta\)</span> is via
-                    approximation methods. For example, in DDPMs, we
-                    relied on variational inference and used the ELBO as
-                    a surrogate objective to maximise the log likelihood
-                    of the data.</p>
-                    <p>Score-based models are motivated by this
-                    fundamental limitation and offers an alternative
-                    that avoids calculating or approximating the
-                    normalization constant by learning the score
-                    function<span class="math inline">\(\nabla_x \log
-                    p_\theta (x)\)</span> of the distribution instead.
-                    By taking the derivative of the log of the
-                    unnormalized density in Equation 3, we can see
-                    that:</p>
-                    <p><span class="math display">\[
-                    \begin{aligned}
-                    \nabla_x \log p_\theta (x) &amp;= \nabla_x
-                    \log\frac{e^{-f_\theta(x)}}{Z_\theta} \\
-                    &amp;= \underbrace{\nabla_x
-                    \log\frac{1}{Z_\theta}}_{=0} + \nabla_x \log
-                    e^{-f_\theta(x)} \\
-                    &amp;= -\nabla_x f_\theta(x) \\
-                    &amp;\approx s_\theta(x)
-                    \end{aligned}
-                    \]</span></p>
-                    <p>where <span
-                    class="math inline">\(s_\theta(x)\)</span> is our
-                    score-based model that learns <span
-                    class="math inline">\(\theta\)</span> that best
-                    approximates <span class="math inline">\(\nabla_x
-                    \log p (x)\)</span>.</p>
-                    <p>It is intuitive to see that <span
-                    class="math inline">\(s_\theta(x)\)</span> is
-                    independent of the normalization constant <span
-                    class="math inline">\(Z_\theta\)</span>. And to
-                    train score-based models, we can simply minimize the
-                    expected Fisher Divergence between the <span
-                    class="math inline">\(s_\theta (x)\)</span> and the
-                    score function:</p>
-                    <p><span class="math display">\[
-                    \begin{aligned}
-                    \hat{\theta} &amp;= \argmin_{\theta}
-                    \frac{1}{2}\mathbb{E}_{p(x)} \Big[ \|  \nabla_x \log
-                    p(x) -  s_\theta(x)  \|^2_2 \Big] \tag{4}
-                    \end{aligned}
-                    \]</span></p>
-                    <p>Intuitively, the Fisher Divergence measures the
-                    squared <span class="math inline">\(\ell_2\)</span>
-                    distance between the ground truth score function and
-                    the score-based model. This is what is known as
-                    <strong><em>score matching</em></strong>. Instead of
-                    directly maximizing the likelihood function, score
-                    matching instead tries to find a <span
-                    class="math inline">\(\theta\)</span> such that the
-                    gradient of the model’s log likelihood is
-                    approximately the same as the gradient of the data
-                    distribution’s log likelihood, circumventing the
-                    need to work with the normalization constant.</p>
-                    <p>However, a problem here is that it requires
-                    access to <span class="math inline">\(\nabla_x \log
-                    p(x)\)</span> dependent on an unknown <span
-                    class="math inline">\(p(x)\)</span>, which is the
-                    same limitation faced by likelihood-based methods.
-                    Fortunately, <a
-                    href="https://jmlr.org/papers/v6/hyvarinen05a.html">Hyvärinen
-                    (2005)</a> showed that by applying multivariate
-                    integration by parts, the objective in Equation 4
-                    can be rewritten to not rely on <span
-                    class="math inline">\(p(x)\)</span> as such:</p>
-                    <p><span class="math display">\[
-                    \begin{aligned}
-                    \hat{\theta} &amp;=
-                    \argmin_{\theta}\mathbb{E}_{p(x)} \left[
-                    \text{tr}({\nabla_x s_\theta(x)}) + \frac{1}{2}
-                    \|s_\theta(x)\|^2_2 \right] \tag{5}
-                    \end{aligned}
-                    \]</span></p>
-                    <p>where <span class="math inline">\(\nabla_x
-                    s_\theta (x)\)</span> denotes the Jacobian of <span
-                    class="math inline">\(s_\theta (x)\)</span>, which
-                    is also the Hessian of the log-density function, and
-                    <span
-                    class="math inline">\(\text{tr}(\cdot)\)</span>
-                    denotes the trace of the Jacobian matrix, i.e. the
-                    sum of the elements on the main diagonal of the
-                    matrix.</p>
-                    <h3
-                    id="intuitive-interpretation-of-score-matching">Intuitive
-                    Interpretation of Score Matching</h3>
-                    <p>We can expect the second term, <span
-                    class="math inline">\(\|s_\theta(x)\|^2_2 = \|
-                    \nabla_x \log p_\theta (x)\|^2_2\)</span>, to be
-                    small when the gradients of the score function are
-                    close to zero, indicating a local extremum of the
-                    log-likelihood. This term is closely related to the
-                    maximization of the non-normalized log-likelihood.
-                    However, optimizing solely the non-normalized
-                    log-likelihood could lead to a trivial solution
-                    where the score function is flat, i.e., it has
-                    infinite variance and assigns equal probability to
-                    all <span class="math inline">\(x\)</span>. Such a
-                    solution is undesirable because it fails to uniquely
-                    describe the observed data distribution.</p>
-                    <p>The first term, <span
-                    class="math inline">\(\text{tr}({\nabla_x
-                    s_\theta(x)})\)</span>, provides information about
-                    the overall curvature or sharpness of the extremum.
-                    To minimize the Fisher Divergence, we need this term
-                    to be negative, indicating that the extremum is a
-                    maximum. A more negative trace of the Hessian
-                    suggests a sharper maximum of the log-likelihood for
-                    the observed data points, <span
-                    class="math inline">\(x\)</span>, as opposed to a
-                    flat maximum. Therefore, the trace term favors
-                    steeper maxima that more uniquely reflects the data
-                    distribution, compared to a flat maxima where
-                    similar probabilities are assigned to all data
-                    points. In some sense, this term acts as a proxy for
-                    the normalization constant in traditional density
-                    estimation. It encourages the learned score function
-                    to behave like the gradient of a properly normalized
-                    log-density function by penalizing score functions
-                    that would correspond to optimizing only the
-                    non-normalized density function.</p>
-                    <h3 id="langevin-dynamics">Langevin Dynamics</h3>
-                    <p>Okay, now that we have trained a score-based
-                    model <span class="math inline">\(s_\theta (x)
-                    \approx \nabla_x \log p(x)\)</span>, how do we even
-                    generate samples using it?</p>
-                    <figure>
-                    <img
-                    src="../assets/2025-08-16-diffusion-models/Untitled%203.png"
-                    alt="Image from Luo (2022)" />
-                    <figcaption aria-hidden="true">Image from <a
-                    href="https://arxiv.org/pdf/2208.11970">Luo
-                    (2022)</a></figcaption>
-                    </figure>
-                    <p>Intuitively, what the model has learnt is a
-                    gradient vector field over the density function of
-                    <span class="math inline">\(x\)</span> and each
-                    point in the field indicates the direction and rate
-                    of fastest increase (represented by the arrows in
-                    the image above). Langevin dynamics provide a Markov
-                    Chain Monte Carlo procedure to sample from <span
-                    class="math inline">\(p(x)\)</span> with access to
-                    only <span class="math inline">\(\nabla_x \log
-                    p(x)\)</span>. Starting from any arbitrary point
-                    <span class="math inline">\(x_0 \sim \pi(x)\)</span>
-                    (represented by blue dots in image above) sampled
-                    from some assumed prior distribution <span
-                    class="math inline">\(\pi\)</span> (e.g. Gaussian),
-                    we can iteratively perform the following updates to
-                    climb towards the modes of the distribution
-                    (represented by red lines in image above):</p>
-                    <p><span class="math display">\[
-                    x_{t+1} \leftarrow x_t + \epsilon \nabla_x \log p(x)
-                    + \sqrt{2\epsilon}z_t,  \quad t=0,1,\dots,K
-                    \]</span></p>
-                    <p>where <span class="math inline">\(z_t \sim
-                    \mathcal{N}(0,I)\)</span>. The addition of the
-                    Gaussian noise helps to introduce stochasticity to
-                    the generative process, allowing the samples to
-                    converge towards different modes other than the
-                    nearest. When <span
-                    class="math inline">\(\epsilon\)</span> is
-                    sufficiently small and <span
-                    class="math inline">\(K\)</span> is sufficiently
-                    large, we would produce a sample from <span
-                    class="math inline">\(p(x)\)</span> under some
-                    regularity conditions!</p>
-                    <h3
-                    id="pitfalls-of-naive-score-based-generative-modelling">Pitfalls
-                    of Naive Score-based Generative Modelling</h3>
-                    <p>There are pitfalls involved with this naive
-                    approach of sampling via Langevin dynamics. Firstly,
-                    in regions where few data points are available for
-                    training the model, the estimated score functions
-                    can be inaccurate. This is because the model is
-                    trained on the Fisher divergence which is an
-                    expectation over <span
-                    class="math inline">\(p(x)\)</span>, i.e.</p>
-                    <p><span class="math display">\[
-                    \mathbb{E}_{p(x)} \Big[ \|  \nabla_x \log p(x)
-                    -  s_\theta(x)  \|^2_2 \Big] = \int p(x)
-                    \|  \nabla_x \log p(x) -  s_\theta(x)  \|^2_2 \, dx
-                    \]</span></p>
-                    <p>Because the squared <span
-                    class="math inline">\(\ell_2\)</span> difference is
-                    weighted by <span
-                    class="math inline">\(p(x)\)</span>, the errors are
-                    largely ignored in low density regions where <span
-                    class="math inline">\(p(x)\)</span> is small and
-                    results in an inaccurate learned model. Since
-                    sampling via Langevin dynamics involves starting
-                    from a random location in the high-dimensional space
-                    which is likely to be in low density regions (it is
-                    unlikely to choose a point that corresponds to an
-                    actual sample), an inaccurate score-based model
-                    derails the sampling trajectory right from the
-                    beginning.</p>
-                    <p>Secondly, the manifold hypothesis poses a
-                    problem. The manifold hypothesis postulates that
-                    real-world data often lies in a low-dimensional
-                    manifold embedded in a high-dimensional space and it
-                    has been empirically observed in many datasets. As
-                    such, points in the high-dimensional space outside
-                    of the low-dimensional manifold would have
-                    probability zero and an undefined <span
-                    class="math inline">\(\nabla_x \log p(x)\)</span>.
-                    This causes the score function to be ill-defined.
-                    Moreover, in order to represent the objective using
-                    Equation 5, it would require that the support of
-                    <span class="math inline">\(p(x)\)</span> is over
-                    the whole space.</p>
-                    <h3
-                    id="score-based-generative-modeling-with-multiple-noise-perturbations"><strong>Score-based
-                    Generative Modeling with Multiple Noise
-                    Perturbations</strong></h3>
-                    <p>As it turns out, the above-mentioned pitfalls can
-                    be bypassed simply by perturbing data points with
-                    Gaussian noise. By injecting small amounts of
-                    Gaussian noise into the data, the noised data
-                    distribution would have full support and is no
-                    longer confined to a low-dimensional manifold. When
-                    the noise magnitude is sufficiently large, it would
-                    also populate low data density regions and thereby
-                    improve the accuracy of the score function.</p>
-                    <p><a href="https://arxiv.org/abs/1907.05600">Song
-                    &amp; Ermon (2019)</a> proposed to perturb the data
-                    with a increasing sequence of isotropic Gaussian
-                    noise <span
-                    class="math inline">\(\{\sigma_t\}_{t=1}^T\)</span>
-                    to obtain a noise-perturbed distribution</p>
-                    <p><span class="math display">\[
-                    p_{\sigma_t}(x) = \int p(x) \mathcal{N} (x_t; x,
-                    \sigma_t^2I) \, dx
-                    \]</span></p>
-                    <p>Then, they estimate the score function of the
-                    noise-perturbed distribution by training a
-                    <em>Noise-Conditioned Score Network (NCSN)</em>
-                    <span class="math inline">\(s_\theta (x, t)\)</span>
-                    to jointly estimate the scores of all perturbed data
-                    at different noise levels. The objective then
-                    becomes</p>
-                    <p><span class="math display">\[
-                    \begin{aligned}
-                    \hat{\theta} &amp;= \argmin_{\theta} \sum_{t=1}^T
-                    \lambda (t)\mathbb{E}_{p_{\sigma_t}(x_t)} \Big[
-                    \|  \nabla_{x_t} \log p_{\sigma_t} (x_t)
-                    -  s_\theta(x,t)  \|^2_2 \Big] \tag{6}
-                    \end{aligned}
-                    \]</span></p>
-                    <p>where <span
-                    class="math inline">\(\lambda(t)\)</span> is a
-                    positive weighing function. After training <span
-                    class="math inline">\(s_\theta (x, t)\)</span>, we
-                    can then produce samples by running Langevin
-                    dynamics for each <span class="math inline">\(t = T,
-                    T-1, \dots, 1\)</span> and this method is called
-                    <strong>annealed Langevin dynamics</strong> since
-                    the noise scale <span
-                    class="math inline">\(\sigma_t\)</span> decreases
-                    (anneals) with each time step.</p>
-                    <p>Notice how this procedure is very similar to the
-                    one in DDPMs. In fact, their objectives can be
-                    reconciled with the same formulation and that is
-                    what we’re going to show. For a Gaussian data
-                    distribution <span class="math inline">\(x \sim
-                    \mathcal{N}(\mu, \sigma^2 I)\)</span>, the
-                    derivative of the log density function is</p>
-                    <p><span class="math display">\[
-                    \begin{aligned}
-                    \nabla_x \log p(x) &amp;= \nabla_x \Big[ \log
-                    (\frac{1}{\sigma\sqrt{2\pi}}e^{-\frac{1}{2}\frac{(x_t
-                    - \mu)^2}{\sigma^2}}) \Big] \\
-                    &amp;= \nabla_x(-\frac{1}{2\sigma^2}(x-\mu)^2) \\
-                    &amp;= -\frac{x-\mu}{\sigma^2} \\
-                    &amp;= -\frac{\epsilon}{\sigma}
-                    \end{aligned}
-                    \]</span></p>
-                    <p>where <span class="math inline">\(\epsilon \sim
-                    \mathcal{N}(0, I)\)</span>. Recall from <a
-                    href="https://www.notion.so/Notes-on-Diffusion-Models-143444a757834040a5dd5b6c935b62b8?pvs=21">earlier</a>
-                    in DDPM, the posterior of a noised <span
-                    class="math inline">\(x_t\)</span> given initial
-                    <span class="math inline">\(x_0\)</span> is <span
-                    class="math inline">\(q(x_t | x_0) \sim
-                    \mathcal{N}(x_t; \sqrt{\bar{a}_t}x_0,
-                    (1-\bar{a}_t)\mathbf{I})\)</span>. As such, we can
-                    rewrite the gradient of the log density of each
-                    noised sample <span
-                    class="math inline">\(x_t\)</span> as:</p>
-                    <p><span class="math display">\[
-                    \begin{aligned}
-                    \nabla_{x_t}\log p(x_t)
-                    &amp;=\mathbb{E}_{q(x_0)}\Big[\nabla_{x_t}\log q(x_t
-                    | x_o) \Big] \\
-                    &amp;= \mathbb{E}_{q(x_0)}\Big[-
-                    \frac{\epsilon_0}{\sqrt{1-\bar{a}_t}}\Big] \\
-                    &amp;=
-                    \int-q(x)\cdot\frac{\epsilon_0}{\sqrt{1-\bar{a}_t}}
-                    \, dx \\
-                    &amp;= -\frac{\epsilon_0}{\sqrt{1-\bar{a}_t}}\int
-                    q(x) \, dx \\
-                    &amp;= -\frac{\epsilon_0}{\sqrt{1-\bar{a}_t}}
-                    \tag{6}
-                    \end{aligned}
-                    \]</span></p>
-                    <p>where <span class="math inline">\(\epsilon_0 \in
-                    \mathcal{N}(\epsilon; 0, I)\)</span> refers to the
-                    source noise that produces <span
-                    class="math inline">\(x_t\)</span> from the original
-                    image <span class="math inline">\(x_0\)</span>.</p>
-                    <p>As it turns out, the gradient of the log density
-                    function in NCSN and the source noise in DDPM are
-                    off by only a constant factor that scales with time
-                    (i.e. <span
-                    class="math inline">\(-\frac{1}{\sqrt{1-\bar{a}_t}}\)</span>)!
-                    Intuitively, the reason the score function in NCSN
-                    points in the opposite (negative) direction of the
-                    source noise in DDPM is that the score function
-                    indicates the direction in which the log density is
-                    maximized, whereas the source noise in DDPM corrupts
-                    the image away from its original state. Therefore,
-                    moving in the opposite direction of the source noise
-                    effectively “denoises” the image and increases the
-                    log density of the resulting sample.</p>
-                    <p>With that, we have shown that the <span
-                    class="math inline">\(\epsilon\)</span>-prediction
-                    parameterization in DDPM simplifies the diffusion
-                    model’s variational bound to an objective that
-                    closely resembles denoising score matching in
-                    NCSN!</p>
-                    <h2 id="conditional-generation">Conditional
-                    Generation</h2>
-                    <p>As of now, we have only focused on modelling the
-                    sample distribution <span
-                    class="math inline">\(p(x)\)</span>. However, it
-                    would be more practical if we could learn a
-                    conditional distribution <span
-                    class="math inline">\(p(x|y)\)</span> that allows us
-                    to generate images conditioned on conditional
-                    information <span class="math inline">\(y\)</span>
-                    which can be a class label, a text encoding in
-                    image-text generation, or even a low-resolution
-                    image to perform super-resolution on. Conditional
-                    generation forms the backbone of state-of-the-art
-                    image-to-text models such as <a
-                    href="https://arxiv.org/abs/2204.06125v1">DALL-E
-                    2</a> and <a
-                    href="https://arxiv.org/abs/2205.11487">Imagen</a>.</p>
-                    <p>An intuitive way to incorporate conditioning
-                    information <span class="math inline">\(y\)</span>
-                    into the generative process would be to condition
-                    each transition step on it as such:</p>
-                    <p><span class="math display">\[
-                    p(x_{0:T} | y) = p(x_T) \prod_{t=1}^T
-                    p_\theta(x_{t-1}|x_t, y)
-                    \]</span></p>
-                    <p>This would allow us to learn the model as before,
-                    by predicting the source noise <span
-                    class="math inline">\(\hat{\epsilon}_\theta(x_t, t,
-                    y) \approx \epsilon_0\)</span>. However, this
-                    formulation may cause the model to ignore the
-                    conditioning information. As such, classifier
-                    guidance was introduced to control the amount of
-                    weight given to the conditioning information, at the
-                    cost of sample diversity. Classifier guidance
-                    provides a way to steer the sampling process in the
-                    direction of the image space that maximizes the
-                    probability of the denoised image belonging to the
-                    desired class.</p>
-                    <h3 id="classifier-guided-diffusion">Classifier
-                    Guided Diffusion</h3>
-                    <p>The first way is to introduce guidance is by
-                    training a separate classifier model <span
-                    class="math inline">\(p(y|x_t)\)</span> on noisy
-                    samples <span class="math inline">\(x_t\)</span>. At
-                    every step <span class="math inline">\(t\)</span> of
-                    the denoising process, we can then use the gradients
-                    of the classifier, i.e. <span
-                    class="math inline">\(\nabla_{x_T} \log
-                    p(y|x_t)\)</span>, to guide the denoising process
-                    towards an arbitrary input feature, which could be a
-                    class label, <span
-                    class="math inline">\(y\)</span>.</p>
-                    <p>To understand why this works, we can make use of
-                    the Bayes rule:</p>
-                    <p><span class="math display">\[
-                    \begin{aligned}
-                    \nabla_{x_t} \log p(x_t | y) &amp;= \nabla_{x_t}
-                    \log\Big(\frac{p(x_t)p(y|x_t)}{p(y)}\Big) \\
-                    &amp;= \nabla_{x_t} \log p(x_t) + \nabla_{x_t} \log
-                    p(y|x_t) - \nabla_{x_t} \log p(y) \\
-                    &amp;= \underbrace{\nabla_{x_t} \log
-                    p(x_t)}_{\text{unconditional gradient}} +
-                    \underbrace{\nabla_{x_t} \log
-                    p(y|x_t)}_{\text{classifier gradient}} \tag{7}
-                    \end{aligned}
-                    \]</span></p>
-                    <p>In order to have control over the degree to which
-                    the conditional model adheres to the conditioning
-                    information, <a
-                    href="https://arxiv.org/abs/2105.05233">Dhariwal and
-                    Nichol (2021)</a> scales the conditioning term by a
-                    hyperparameter:</p>
-                    <p><span class="math display">\[
-                    \nabla_{x_t}\log p_\gamma(x_t |y) = \nabla_{x_t}
-                    \log p(x_t) + \gamma\nabla_{x_t} \log p(y|x_t)
-                    \tag{8}
-                    \]</span></p>
-                    <p>where <span class="math inline">\(\gamma\)</span>
-                    is called the guidance scale. <span
-                    class="math inline">\(\gamma\)</span> essentially
-                    controls how much our learned conditional model
-                    cares about the conditioning information. The
-                    greater <span class="math inline">\(\gamma\)</span>
-                    is, the more likely the generated samples reflect
-                    the conditioned information, albeit at the cost of
-                    sample diversity. Intuitively, the score function
-                    <span class="math inline">\(\nabla_{x_t} \log
-                    p(x_t)\)</span> points in the direction of the image
-                    space that maximises the likelihood of the resulting
-                    image and the classifier gradients <span
-                    class="math inline">\(\nabla_{x_t} \log
-                    p(y|x_t)\)</span> points in the direction of the
-                    image space that maximises the likelihood of the
-                    conditioning information. Combining these gradients
-                    together results in a step that balances between
-                    both objectives depending on <span
-                    class="math inline">\(\gamma\)</span>.</p>
-                    <figure>
-                    <img
-                    src="../assets/2025-08-16-diffusion-models/Untitled%204.png"
-                    alt="Image from Dieleman (2023)" />
-                    <figcaption aria-hidden="true">Image from <a
-                    href="https://sander.ai/2023/08/28/geometry.html">Dieleman
-                    (2023)</a></figcaption>
-                    </figure>
-                    <p>Equation 8 requires that we combine the output of
-                    a denoising score-based generative model and the
-                    gradients of the classifier. However, recall that
-                    denoising score matching has a similar
-                    interpretation as <span
-                    class="math inline">\(\epsilon\)</span>-prediction
-                    parameterization in DDPM, i.e. <span
-                    class="math inline">\(\log p(x_t) =
-                    -\frac{1}{\sqrt{1-\hat{a}_t}}\epsilon_\theta(x_t,
-                    t)\)</span>. Plugging this into Equation 8 we
-                    get:</p>
-                    <p><span class="math display">\[
-                    \begin{aligned}
-                    \nabla_{x_t}\log p_\gamma(x_t |y) &amp;=
-                    -\frac{1}{\sqrt{1-\hat{a}_t}}\epsilon_\theta(x_t, t)
-                    + \gamma \nabla_{x_t}\log p(y|x_t) \\
-                    &amp;= -\frac{1}{\sqrt{1-\hat{a}_t}}
-                    \Big[\epsilon_\theta(x_t, t) - \gamma
-                    \sqrt{1-\hat{a}_t} \nabla_{x_t}\log p(y|x_t)\Big]
-                    \end{aligned}
-                    \]</span></p>
-                    <p>As such, our new classifier-guided DDPM would
-                    take the form:</p>
-                    <p><span class="math display">\[
-                    \epsilon_\theta (x_t;t,y) = \epsilon_\theta(x_t, t)
-                    - \gamma \sqrt{1-\hat{a}_t} \nabla_x\log p(y|x_t)
-                    \tag{9}
-                    \]</span></p>
-                    <p>There are a few things to clarify here:</p>
-                    <ol type="1">
-                    <li>Both the classifier and diffusion models are
-                    trained on noisy images independently.</li>
-                    <li>The reason behind training the classifier on the
-                    noisy image samples instead of the original images
-                    is to allow it to be robust against the distortion
-                    introduced by the forward trajectory of the
-                    diffusion models. This is also what allows us to
-                    apply the gradients of the classifier for guidance
-                    on every step of the denoising process.</li>
-                    <li>In the neural network paradigm, the gradient of
-                    the classifier is calculated by backpropagating
-                    through the layers of trained classifier from the
-                    output logits back to the input image</li>
-                    </ol>
-                    <h3 id="classifier-free-guidance">Classifier-free
-                    Guidance</h3>
-                    <p>The drawback of the classifier guidance is that
-                    it requires the training of two separate models, the
-                    diffusion model and the classifier. Moreover, this
-                    classifier must be trained on noisy data so it is
-                    generally not possible to plug in a pre-trained
-                    classifier. As such, <a
-                    href="https://openreview.net/forum?id=qw8AKxfYbI">Ho
-                    &amp; Salimans (2021)</a> introduced
-                    <em>classifier-free diffusion guidance</em>, which
-                    allows us to jointly train a conditional and
-                    unconditional diffusion model using a singular
-                    neural network, without learning a separate
-                    classifier. This model, denoted <span
-                    class="math inline">\(\epsilon_\theta(x_t;t,y)\)</span>,
-                    is trained on the labelled data <span
-                    class="math inline">\((x,y)\)</span> but the
-                    conditioning information <span
-                    class="math inline">\(y\)</span> is discarded
-                    periodically to allow the model to generate images
-                    unconditionally, i.e. <span
-                    class="math inline">\(\epsilon_\theta(x_t;t) =
-                    \epsilon_\theta(x_t;t,y =\varnothing)\)</span>.</p>
-                    <p>To train <span
-                    class="math inline">\(\epsilon_\theta(x_t;t,y)\)</span>
-                    without a classifier, we have to replace Equation 9
-                    to not rely on its gradient. First, by switching the
-                    terms around in Equation 7 we get</p>
-                    <p><span class="math display">\[
-                    \begin{aligned}
-                    \nabla_{x_t}\log p(y|x_t) &amp;= \nabla_{x_t} \log
-                    p(x_t | y) - \nabla_{x_t} \log p(x_t) \\
-                    &amp;= -\frac{1}{\sqrt{1-\hat{a}_t}}
-                    \Big[\epsilon_\theta (x_t;t,y)  - \epsilon_\theta
-                    (x_t;t) \Big]
-                    \end{aligned}
-                    \]</span></p>
-                    <p>Plugging this into Equation 9 we get:</p>
-                    <p><span class="math display">\[
-                    \begin{aligned}
-                    \epsilon_\theta (x_t;t,y) &amp;=
-                    \epsilon_\theta(x_t, t) - \gamma \sqrt{1-\hat{a}_t}
-                    \nabla_x\log p(y|x_t) \\
-                    &amp;= \epsilon_\theta(x_t, t) + \gamma
-                    \Big[\epsilon_\theta (x_t;t,y)  - \epsilon_\theta
-                    (x_t;t) \Big] \\
-                    &amp;= (\gamma+1)\epsilon_\theta (x_t;t,y)
-                    -  \gamma\epsilon_\theta (x_t;t)\\
-                    \end{aligned}
-                    \]</span></p>
-                    <p>This new equation has no classifier gradient
-                    present.</p>
-                    <p>To implement this in a neural network, you can
-                    simply concatenate the conditioning information to
-                    the end of the flattened image vector and replace
-                    the conditioning information with fixed constant
-                    values (e.g. zeros) periodically. The neural network
-                    would then learn to treat those fixed constant
-                    values as the <span
-                    class="math inline">\(\varnothing\)</span>
-                    conditioning and perform unconditional generation
-                    when inputted with them.</p>
-                    <h2 id="summary">Summary</h2>
-                    <p>To wrap up, diffusion models represent a
-                    fascinating approach to data generation and
-                    denoising tasks in the realm of deep learning. At
-                    their core, these models leverage a process called
-                    diffusion, which involves progressively applying
-                    Gaussian noise to an original sample distribution.
-                    The diffusion model then aims to learn the
-                    parameters that maximize the Variational Lower Bound
-                    (VLB) during the denoising step.</p>
-                    <p>Notably, diffusion models often excel in terms of
-                    generalizability and training stability, steering
-                    clear of pitfalls like mode collapse commonly
-                    encountered by GANs. However, GANs are still
-                    considerably more computationally efficient compared
-                    to diffusion models. This is due to the fact that
-                    GANs can generate an image in a single forward pass
-                    but diffusion models rely on a long Markov chain of
-                    denoising steps.</p>
-                    <p>Still, diffusion models have proved their
-                    incredible capabilities in generating realistic
-                    samples. It’s highly likely that we’ll witness the
-                    emergence of even more powerful diffusion-based
-                    generative models, pushing the boundaries of
-                    generative modeling to new heights in the years
-                    ahead!</p>
-                    <h2 id="references">References</h2>
-                    <p>[1] Goodfellow, Ian &amp; Pouget-Abadie, Jean
-                    &amp; Mirza, Mehdi &amp; Xu, Bing &amp;
-                    Warde-Farley, David &amp; Ozair, Sherjil &amp;
-                    Courville, Aaron &amp; Bengio, Y.. (2014).
-                    Generative Adversarial Networks. Advances in Neural
-                    Information Processing Systems. 3.
-                    10.1145/3422622.</p>
-                    <p>[2] Dhariwal, Prafulla &amp; Nichol, Alex.
-                    (2021). Diffusion Models Beat GANs on Image
-                    Synthesis.</p>
-                    <p>[3] Zhang, H., Xu, T., Li, H., Zhang, S., Wang,
-                    X., Huang, X., &amp; Metaxas, D.N. (2016). StackGAN:
-                    Text to Photo-Realistic Image Synthesis with Stacked
-                    Generative Adversarial Networks. <em>2017 IEEE
-                    International Conference on Computer Vision
-                    (ICCV)</em>, 5908-5916.</p>
-                    <p>[4] Xu, T., Zhang, P., Huang, Q., Zhang, H., Gan,
-                    Z., Huang, X., &amp; He, X. (2017). AttnGAN:
-                    Fine-Grained Text to Image Generation with
-                    Attentional Generative Adversarial
-                    Networks. <em>2018 IEEE/CVF Conference on Computer
-                    Vision and Pattern Recognition</em>, 1316-1324.</p>
-                    <p>[5] Shoshan, A., Bhonker, N., Kviatkovsky, I.,
-                    &amp; Medioni, G.G. (2021). GAN-Control: Explicitly
-                    Controllable GANs. <em>2021 IEEE/CVF International
-                    Conference on Computer Vision (ICCV)</em>,
-                    14063-14073.</p>
-                    <p>[6] Sohl-Dickstein, J., Weiss, E.,
-                    Maheswaranathan, N. &amp; Ganguli, S.. (2015). Deep
-                    Unsupervised Learning using Nonequilibrium
-                    Thermodynamics. Proceedings of the 32nd
-                    International Conference on Machine Learning, in
-                    Proceedings of Machine Learning Research
-                    37:2256-2265</p>
-                    <p>[7] Ho, J., Jain, A., &amp; Abbeel, P. (2020).
-                    Denoising Diffusion Probabilistic Models. <em>ArXiv,
-                    abs/2006.11239</em>.</p>
-                    <p>[8] Feller, W. (1949). On the Theory of
-                    Stochastic Processes, with Particular Reference to
-                    Applications.</p>
-                    <p>[9] Weng, Lilian. (2021). What are diffusion
-                    models? Lil’Log. <a
-                    href="https://lilianweng.github.io/posts/2021-07-11-diffusion-models/">https://lilianweng.github.io/posts/2021-07-11-diffusion-models/</a></p>
-                    <p>[10] Luo, C. (2022). Understanding Diffusion
-                    Models: A Unified Perspective. <em>ArXiv,
-                    abs/2208.11970</em>.</p>
-                    <p>[11] Karagiannakos, S., Adaloglou, N. (2022).
-                    Diffusion models: toward state-of-the-art image
-                    generation. <a
-                    href="https://theaisummer.com/diffusion-models/">https://theaisummer.com/diffusion-models/</a></p>
-                    <p>[12] Song, Y., &amp; Stefano Ermon. (2019).
-                    Generative Modeling by Estimating Gradients of the
-                    Data Distribution. <em>ArXiv (Cornell
-                    University)</em>.
-                    https://doi.org/10.48550/arxiv.1907.05600</p>
-                    <p>[13] Dhariwal, P., &amp; Nichol, A. Q. (2021).
-                    Diffusion Models Beat GANs on Image
-                    Synthesis. <em>Neural Information Processing
-                    Systems</em>, <em>34</em>.</p>
-                    <p>[14] Zeng, F. P., &amp; Wang, O. (2023).
-                    Score-Based Diffusion Models. <em>fanpu.io</em>. <a
-                    href="https://fanpu.io/blog/2023/score-based-diffusion-models/">https://fanpu.io/blog/2023/score-based-diffusion-models/</a></p>
-                    <p>[15] Hyvärinen, A. (2005). Estimation of
-                    Non-Normalized Statistical Models by Score
-                    Matching. <em>Journal of Machine Learning
-                    Research</em>, <em>6</em>(24),
-                    695–709. http://jmlr.org/papers/volume6/hyvarinen05a/old.pdf</p>
-                  </div>
-                </div>
-              </td>
-            </tr>
-          </tbody></table>
-        </td>
-      </tr>
-    </table>
+    <!-- Use the same responsive container structure as blog.html -->
+    <div style="max-width: 800px; margin: 0 auto; padding: 2rem 1rem;">
+      <div class="blog-post">
+        <button onclick="window.location.href='../../blog.html'" style="margin-bottom: 1rem; padding: 0.5rem 1rem; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">← Back to Blog</button>
+        <div class="post-content">
+          <h1 id="mathematics-behind-diffusion-models">Mathematics
+          behind Diffusion Models</h1>
+          <p>It was personally quite a struggle to understand how
+          diffusion works. Fortunately, several resources—especially <a
+          href="https://arxiv.org/pdf/2208.11970">Luo (2022)</a> and <a
+          href="https://lilianweng.github.io/posts/2021-07-11-diffusion-models/">Weng
+          (2021)</a>—made the learning process a lot easier. In this
+          blog post, I’ve distilled my personal notes from these
+          resources on understanding diffusion models, and I hope this
+          can help others going through the same struggle I did!</p>
+          <h2 id="what-are-diffusion-models">What are Diffusion
+          Models?</h2>
+          <p>The concept of diffusion-based generative modelling was
+          actually proposed early in 2015 by <a
+          href="https://arxiv.org/abs/1503.03585">Sohl-Dickstein et
+          al.</a> who were inspired by non-equilibrium thermodynamics.
+          The idea behind it as described by Sohl-Dickstein et
+          al. (2015) is this:</p>
+          <blockquote>
+          <p>The essential idea, inspired by non-equilibrium statistical
+          physics, is to systematically and slowly destroy structure in
+          a data distribution through an iterative forward diffusion
+          process. We then learn a reverse diffusion process that
+          restores structure in data, yielding a highly flexible and
+          tractable generative model of the data.</p>
+          </blockquote>
+          <p>Half a decade later, <a
+          href="https://arxiv.org/abs/2006.11239">Ho et al. (2020)</a>
+          proposed Denoising Diffusion Probabilistic Models (DDPMs),
+          which improved upon the previous method by introducing
+          significant simplifications to the training process. Soon
+          after, a <a href="https://arxiv.org/pdf/2105.05233">2021 paper
+          by OpenAI</a> demonstrated DDPMs’ superior performance in
+          image synthesis tasks compared to <a
+          href="https://www.notion.so/Generative-Adversarial-Networks-ebfba7327d264466b8496a52cf98e453?pvs=21">Generative
+          Adversarial Networks (GANs)</a>. Since then, notable
+          diffusion-based generative models have been released such as
+          <a href="https://arxiv.org/abs/2102.12092">DALL-E</a>, <a
+          href="https://arxiv.org/abs/2112.10752">Stable Diffusion</a>
+          and <a href="https://arxiv.org/abs/2205.11487">Imagen</a>.
+          I’ll be covering the concept underlying diffusion models,
+          mainly focusing on DDPMs.</p>
+          <p>To better understand this, let’s focus on the forward
+          diffusion process and reverse diffusion process
+          separately.</p>
+          <h3 id="forward-diffusion-process">Forward Diffusion
+          Process</h3>
+          <figure>
+          <img src="../assets/2025-08-16-diffusion-models/Untitled.png"
+          alt="Image by Karagiannakos and Adaloglou (2022), modified from Ho et al. (2020)" />
+          <figcaption aria-hidden="true">Image by <a
+          href="https://theaisummer.com/diffusion-models/">Karagiannakos
+          and Adaloglou (2022)</a>, modified from <a
+          href="https://arxiv.org/abs/2006.11239">Ho et
+          al. (2020)</a></figcaption>
+          </figure>
+          <p>In the forward trajectory, we want to gradually “corrupt”
+          the training images. As such, we iteratively apply Gaussian
+          noise to images sampled from the true data distribution,
+          i.e. <span class="math inline">\(x_0 \sim q(x)\)</span>, in
+          over <span class="math inline">\(T\)</span> steps to produce a
+          sequence of noisy samples <span class="math inline">\(x_0,
+          x_1, \dots , x_T\)</span>.</p>
+          <p>The diffusion process is fixed to a Markov chain which
+          simply means that each step is only dependent on the previous
+          one (memoryless). Specifically, at each step, we apply
+          Gaussian noise with variance <span
+          class="math inline">\(\beta_T \in (0,1)\)</span> to <span
+          class="math inline">\(x_{t-1}\)</span> to produce a latent
+          variable <span class="math inline">\(x_t\)</span> of the same
+          dimension. As such, each transition is parameterized as a
+          diagonal Gaussian distribution that uses the output of the
+          previous state as its mean:</p>
+          <p><span class="math display">\[
+          q(x_t|x_{t-1}) = \mathcal{N}(x_t;\sqrt{1-\beta_t}x_{t-1},
+          \beta_t\mathbf{I})
+          \]</span></p>
+          <p>Note:</p>
+          <ul>
+          <li><span class="math inline">\(\beta_T\)</span> is known as
+          the “diffusion rate” and it can be sampled according to a
+          variance schedule <span class="math inline">\(\beta_1, \dots,
+          \beta_T\)</span>, which means the amount of noise applied at
+          each time step is not necessarily constant</li>
+          <li><span class="math inline">\(\mathbf{I}\)</span> is the
+          identity matrix. We use the identity matrix because our images
+          are multi-dimensional and we want each dimension to be
+          independent of each other</li>
+          </ul>
+          <p>The posterior after <span class="math inline">\(T\)</span>
+          steps, conditioned on the original data distribution, can be
+          represented as a product of single step conditionals as
+          such:</p>
+          <p><span class="math display">\[
+          q(x_{1:T} | x_0) = \prod^T_{t=1} q(x_t | x_{t-1})
+          \]</span></p>
+          <p>As <span class="math inline">\(T\rightarrow
+          \infty\)</span>, <span class="math inline">\(x_T\)</span> is
+          equivalent to an isotropic Gaussian distribution, losing all
+          information about the original sample distribution.</p>
+          <h3 id="reverse-diffusion-process">Reverse Diffusion
+          Process</h3>
+          <figure>
+          <img
+          src="../assets/2025-08-16-diffusion-models/Untitled%201.png"
+          alt="Image by Karagiannakos and Adaloglou (2022), modified from Ho et al. (2020)" />
+          <figcaption aria-hidden="true">Image by <a
+          href="https://theaisummer.com/diffusion-models/">Karagiannakos
+          and Adaloglou (2022)</a>, modified from <a
+          href="https://arxiv.org/abs/2006.11239">Ho et
+          al. (2020)</a></figcaption>
+          </figure>
+          <p>In the reverse process, we aim to learn a model that can
+          denoise the pure Gaussian noise, i.e. <span
+          class="math inline">\(x_T \sim \mathcal{N}(x_T;
+          0,\mathbf{I})\)</span>, to recover the original sample image.
+          As mentioned by Sohl-Dickstein et al. (2015),</p>
+          <blockquote>
+          <p>Estimating small perturbations is more tractable than
+          explicitly describing the full distribution with a single,
+          non-analytically-normalizable, potential function.</p>
+          </blockquote>
+          <p>Directly describing the original distribution from the pure
+          Gaussian noise can be intractable. Rather, what we can do is
+          train a model <span class="math inline">\(p_\theta\)</span>
+          (e.g. using a neural network) to approximate <span
+          class="math inline">\(q(x_{t-1}|x_{t})\)</span> such that we
+          can iteratively recover the original data distribution in
+          small time steps. Therefore, the reverse trajectory can also
+          be formulated as a Markov chain and can be represented as
+          such:</p>
+          <p><span class="math display">\[
+          p_\theta(x_{0:T}) = p(x_T) \prod^T_{t=1} p_\theta(x_{t-1} |
+          x_t)
+          \]</span></p>
+          <p>where <span class="math inline">\(p(x_T) = \mathcal{N}(x_T;
+          0,\mathbf{I})\)</span>.</p>
+          <p>Moreover, since <span
+          class="math inline">\(q(x_t|x_{t-1})\)</span> follows a
+          Gaussian distribution, if <span
+          class="math inline">\(\beta_t\)</span> is small, then the
+          reversal of the diffusion process has the identical functional
+          form as the forward process <a
+          href="https://www.semanticscholar.org/paper/On-the-Theory-of-Stochastic-Processes%2C-with-to-Feller/4cdcf495232f3ec44183dc74cd8eca4b44c2de64">(Feller,
+          1949)</a>, which means that <span
+          class="math inline">\(q(x_{t-1}|x_{t})\)</span> will also be
+          Gaussian. Therefore, to approximate <span
+          class="math inline">\(q(x_{t-1}|x_{t})\)</span>, our model
+          <span class="math inline">\(p_\theta\)</span> only needs to
+          estimate the Gaussian parameters <span
+          class="math inline">\(\mu_\theta(x_t, t)\)</span> and <span
+          class="math inline">\(\Sigma_\theta(x_t, t)\)</span> for
+          timestep <span class="math inline">\(t\)</span>.</p>
+          <p><span class="math display">\[
+          p_\theta(x_{t-1} | x_t) = \mathcal{N}(x_{t-1}; \mu_\theta(x_t,
+          t), \Sigma_\theta(x_t, t))
+          \]</span></p>
+          <p>Note:</p>
+          <ul>
+          <li><span class="math inline">\(p_\theta\)</span> not only
+          takes in <span class="math inline">\(x_t\)</span>, but also
+          <span class="math inline">\(t\)</span>, as inputs because each
+          time step is associated with different noise levels.</li>
+          </ul>
+          <h2 id="parameterisation-of-diffusion-model">Parameterisation
+          of Diffusion Model</h2>
+          <p>In summary, we have defined the forward trajectory as a
+          steady noisification of the sample distribution over time and
+          the reverse trajectory as “tracing back” these steps to
+          recover the original distribution.</p>
+          <p>But how exactly do we teach a neural network (or other
+          function approximation methods) to approximate the conditional
+          probabilities for each time step in the reverse trajectory? To
+          do so, we need to define a loss function.</p>
+          <p>Naively, we can use a maximum likelihood objective where we
+          maximize the likelihood assigned to <span
+          class="math inline">\(x_0\)</span> by the model, i.e.</p>
+          <p><span class="math display">\[
+          \begin{aligned}
+          p_\theta(x_0) &amp;= \int p_\theta(x_{0:T})dx_{1:T}  \\
+          L &amp;= -\log(p_\theta(x_0))
+          \end{aligned}
+          \]</span></p>
+          <p>This objective is unfortunately intractable as it requires
+          us to marginalize over all possible trajectories we could have
+          taken from <span class="math inline">\(x_{1:T}\)</span>.
+          Rather, we can take inspiration from Variational Autoencoders
+          (VAE) and reformulate the training objective using a
+          variational lower bound (VLB), also known as <strong>“evidence
+          lower bound” (ELBO)</strong>.</p>
+          <p><span class="math display">\[
+          \begin{aligned}\log p_\theta(x_0)
+          &amp;\geq \log p_\theta(x_0) - D_\text{KL}(q(x_{1:T} | x_0) \|
+          p_\theta(x_{1:T} | x_0) ) \\
+          &amp;= \log p_\theta(x_0) - \mathbb{E}_{q(x_{1:T} | x_0)}
+          \Big[ \log\frac{q(x_{1:T} |
+          x_0)}{\frac{p_\theta(x_{0:T})}{p_\theta(x_0)}} \Big] \\
+          &amp;= \log p_\theta(x_0) - \mathbb{E}_{q(x_{1:T} | x_0)}
+          \Big[ \log\frac{q(x_{1:T} | x_0)}{p_\theta(x_{0:T})} + \log
+          p_\theta(x_0) \Big] \\
+          &amp;= - \mathbb{E}_{q(x_{1:T} | x_0)} \Big[
+          \log\frac{q(x_{1:T} | x_0)}{p_\theta(x_{0:T})}  \Big] \\
+          &amp;= \mathbb{E}_{q(x_{1:T} | x_0)} \Big[\log
+          \frac{p_\theta(x_{0:T})}{q(x_{1:T} | x_0)}  \Big]
+          \end{aligned}
+          \]</span></p>
+          <p>Therefore, the last term becomes the VLB of the likelihood
+          assigned to <span class="math inline">\(x_0\)</span>, a proxy
+          objective to maximize. However, this VLB term is still not
+          tractable so further reformulations is needed. Before we
+          proceed, it is important to note that we can rewrite each
+          transition as <span class="math inline">\(q(x_{t}|x_{t-1}) =
+          q(x_{t}|x_{t-1}, x_0)\)</span>, where the extra conditioning
+          term is superfluous due to the Markov property. Using Bayes’
+          rule, we can rewrite each transition as:</p>
+          <p><span class="math display">\[
+          q(x_{t}|x_{t-1}, x_0) = \frac{q(x_{t-1}|x_{t},
+          x_0)q(x_{t}|x_0)}{q(x_{t-1}|x_0)}
+          \]</span></p>
+          <p>This trick will be useful for reducing the variance and
+          derive a more elegant variational lower bound expression.
+          Continuing from where we left off earlier, we have:</p>
+          <p><span class="math display">\[
+          \begin{aligned}\log p_\theta(x_0)
+          &amp;\geq\mathbb{E}_{q(x_{1:T} | x_0)} \Big[\log
+          \frac{p_\theta(x_{0:T})}{q(x_{1:T} | x_0)}  \Big] \\
+          &amp;= \mathbb{E}_{q(x_{1:T} | x_0)} \Big[\log
+          \frac{p_\theta(x_{T})\prod_{t=1}^T p_\theta(x_{t-1} |
+          x_{t})}{\prod_{t=1}^T q(x_{t} | x_{t-1})}  \Big] \\
+          &amp;= \mathbb{E}_{q(x_{1:T} | x_0)} \Big[\log
+          \frac{p_\theta(x_{T})p_\theta(x_0 | x_1)\prod_{t=2}^T
+          p_\theta(x_{t-1} | x_{t})}{q(x_1 |x_0)\prod_{t=2}^T q(x_{t} |
+          x_{t-1})}  \Big] \\
+          &amp;= \mathbb{E}_{q(x_{1:T} | x_0)} \Big[\log
+          \frac{p_\theta(x_{T})p_\theta(x_0 | x_1)\prod_{t=2}^T
+          p_\theta(x_{t-1} | x_{t})}{q(x_1 |x_0)\prod_{t=2}^T q(x_{t} |
+          x_{t-1}, x_0)}  \Big] \\
+          &amp;= \mathbb{E}_{q(x_{1:T} | x_0)} \Big[\log
+          \frac{p_\theta(x_{T})p_\theta(x_0 | x_1)}{q(x_1 |x_0)} +
+          \log\prod_{t=2}^T \frac{p_\theta(x_{t-1} | x_{t})}{q(x_{t} |
+          x_{t-1}, x_0)}  \Big] \\
+          &amp;= \mathbb{E}_{q(x_{1:T} | x_0)} \Big[\log
+          \frac{p_\theta(x_{T})p_\theta(x_0 | x_1)}{q(x_1 |x_0)} +
+          \log\prod_{t=2}^T \frac{p_\theta(x_{t-1} |
+          x_{t})}{\frac{q(x_{t-1}|x_{t},
+          x_0)q(x_{t}|x_0)}{q(x_{t-1}|x_0)}}  \Big] \\
+          &amp;= \mathbb{E}_{q(x_{1:T} | x_0)} \Big[\log
+          \frac{p_\theta(x_{T})p_\theta(x_0 | x_1)}{q(x_1 |x_0)} +
+          \log\prod_{t=2}^T
+          \frac{\cancel{q(x_{t-1}|x_0)}}{\cancel{q(x_{t}|x_0)}} +
+          \log\prod_{t=2}^T \frac{p_\theta(x_{t-1} |
+          x_{t})}{{q(x_{t-1}|x_{t}, x_0)}}  \Big] \\
+          &amp;= \mathbb{E}_{q(x_{1:T} | x_0)} \Big[\log
+          \frac{p_\theta(x_{T})p_\theta(x_0 | x_1)}{\cancel{q(x_1
+          |x_0)}} + \log \frac{\cancel{q(x_{1}|x_0)}}{{q(x_{T}|x_0)}} +
+          \log\prod_{t=2}^T \frac{p_\theta(x_{t-1} |
+          x_{t})}{{q(x_{t-1}|x_{t}, x_0)}}  \Big] \\
+          &amp;= \mathbb{E}_{q(x_{1:T} | x_0)} \Big[\log
+          \frac{p_\theta(x_{T})p_\theta(x_0 | x_1)}{{q(x_{T}|x_0)}} +
+          \log\sum_{t=2}^T \frac{p_\theta(x_{t-1} |
+          x_{t})}{{q(x_{t-1}|x_{t}, x_0)}}  \Big] \\
+          &amp;= \mathbb{E}_{q(x_{1:T} | x_0)}[\log p_\theta(x_0 | x_1)]
+          + \mathbb{E}_{q(x_{1:T} | x_0)}\Big[\log
+          \frac{p_\theta(x_{T})}{{q(x_{T}|x_0)}} \Big] +
+          \log\sum_{t=2}^T \mathbb{E}_{q(x_{1:T} | x_0)}
+          \Big[\frac{p_\theta(x_{t-1} | x_{t})}{{q(x_{t-1}|x_{t},
+          x_0)}}  \Big] \\
+          &amp;= \mathbb{E}_{q(x_{1} | x_0)}[\log p_\theta(x_0 | x_1)] +
+          \mathbb{E}_{q(x_{T} | x_0)}\Big[\log
+          \frac{p_\theta(x_{T})}{{q(x_{T}|x_0)}} \Big] +
+          \log\sum_{t=2}^T \mathbb{E}_{q(x_{t}, x_{t-1} | x_0)}
+          \Big[\frac{p_\theta(x_{t-1} | x_{t})}{{q(x_{t-1}|x_{t},
+          x_0)}}  \Big] \\
+          &amp;= \underbrace{\mathbb{E}_{q(x_{1} | x_0)}[\log
+          p_\theta(x_0 | x_1)]}_{\text{reconstruction term}} -
+          \underbrace{D_\text{KL} (q(x_{T}|x_0) \parallel
+          p_\theta(x_{T}))}_{\text{prior matching term}}  -\sum_{t=2}^T
+          \mathbb{E}_{q(x_{t} | x_0)} [\underbrace{D_\text{KL}
+          ({q(x_{t-1}|x_{t}, x_0)} \parallel p_\theta(x_{t-1} |
+          x_{t}))}_{\text{denoising matching term}}]   \\
+          \end{aligned}
+          \]</span></p>
+          <ul>
+          <li><span class="math inline">\(D_\text{KL} (q(x_{T}|x_0)
+          \parallel p_\theta(x_{T}))\)</span> is a constant because
+          <span class="math inline">\(q\)</span> has no trainable
+          parameters and <span
+          class="math inline">\(p_\theta(x_T)\)</span> is a standard
+          Gaussian. Therefore, we can ignore it.</li>
+          <li><span class="math inline">\(\mathbb{E}_{q(x_{1} |
+          x_0)}[\log p_\theta(x_0 | x_1)]\)</span> is the reconstruction
+          term which predicts the log likelihood of the original data
+          sample given the first-step latent. Since the original data
+          distribution may not be Gaussian, we cannot compute this in
+          closed form. We can approximate and optimise this term using a
+          Monte Carlo estimate.</li>
+          <li><span class="math inline">\(D_\text{KL} ({q(x_{t-1}|x_{t},
+          x_0)} \parallel p_\theta(x_{t-1} | x_{t}))\)</span> measures
+          the KL divergence between the learnt transition step <span
+          class="math inline">\(p_\theta(x_{t-1} | x_{t})\)</span> and
+          the ground-truth denoising transition step <span
+          class="math inline">\(q(x_{t-1}|x_{t}, x_0)\)</span>. <span
+          class="math inline">\(q(x_{t-1}|x_{t}, x_0)\)</span> can act
+          as a ground-truth signal because it defines how to denoise a
+          noisy image <span class="math inline">\(x_t\)</span> with
+          access to what the final, completely denoised image <span
+          class="math inline">\(x_0\)</span> should be.</li>
+          </ul>
+          <p>Given that the denoising matching term is the only term we
+          are interested in, to maximise the likelihood objective, we
+          will need to minimise the KL divergence between the learnt
+          denoising step and ground-truth denoising step. By Bayes’
+          Rule, we can reformulate the ground-truth denoising transition
+          step as such:</p>
+          <p><span class="math display">\[
+          q(x_{t-1}|x_{t}, x_0) = \frac{q(x_{t}|x_{t-1},
+          x_0)q(x_{t-1}|x_0)}{q(x_{t}| x_0)}
+          \]</span></p>
+          <p>Using our definition of the forward transition step and the
+          Markov property, we already know that <span
+          class="math inline">\(q(x_{t}|x_{t-1}, x_0) = q(x_{t}|x_{t-1})
+          = \mathcal{N}(x_t;\sqrt{1-\beta_t}x_{t-1},
+          \beta_t\mathbf{I})\)</span>. Let <span
+          class="math inline">\(\alpha_t = 1 - \beta_t\)</span>, under
+          the reparameterisation trick used in VAEs, samples <span
+          class="math inline">\(x_t \sim q(x_t|x_{t-1})\)</span> can be
+          rewritten as:</p>
+          <p><span class="math display">\[
+          x_t = \sqrt{\alpha_t}x_{t-1} + \sqrt{1- \alpha_t}\epsilon
+          \]</span></p>
+          <p>where <span class="math inline">\(\epsilon \sim
+          \mathcal{N}(\epsilon; 0, \mathbf{I})\)</span>. To express
+          <span class="math inline">\(q(x_{t}| x_0)\)</span> in closed
+          form, we recursively apply the reparameterisation trick. That
+          is, for any <span class="math inline">\(x_t \sim q(x_t |
+          x_0)\)</span>,</p>
+          <p><span class="math display">\[
+          \begin{aligned}
+              x_t &amp;= \sqrt{\alpha_t}x_{t-1} + \sqrt{1-
+          \alpha_t}\epsilon^*_{t-1} \\
+              &amp;= \sqrt{\alpha_t a_{t-1}}x_{t-2} + \sqrt{\alpha_t -
+          \alpha_t a_{t-1}}\epsilon^*_{t-2} +
+          \sqrt{1-\alpha_t}\epsilon^*_{t-1} \\
+              &amp;=  \tag{1} \sqrt{\alpha_t a_{t-1}}x_{t-2} +
+          \sqrt{\alpha_t - \alpha_t a_{t-1} + 1 -
+          \alpha_t}\epsilon_{t-2} \\
+              &amp;= \dots \\
+              &amp;= \sqrt{\prod_{i=1}^t a_i}x_0 + \sqrt{1-\prod_{i=1}^t
+          a_i}\epsilon_0 \\
+              &amp;= \sqrt{\bar{a}_t}x_0 + \sqrt{1-\bar{a}_t}\epsilon_0
+          \\
+              &amp;\sim \mathcal{N}(x_t; \sqrt{\bar{a}_t}x_0,
+          (1-\bar{a}_t)\mathbf{I})
+          \end{aligned}
+          \]</span></p>
+          <p>where <span class="math inline">\(\bar{\alpha}_t =
+          \prod_{i=1}^t \alpha_i\)</span>. We can merge two Gaussians in
+          (1) since the sum of two independent Gaussian random variables
+          is a Gaussian with mean being the sum of the two means and
+          variance being the sum of the two variances. We have therefore
+          derived <span class="math inline">\(q(x_{t}| x_0)\)</span> and
+          we can reuse the parameterization trick to yield <span
+          class="math inline">\(q(x_{t-1}| x_0) = \mathcal{N}(x_{t-1};
+          \sqrt{\bar{\alpha}_{t-1}}x_0,
+          (1-\bar{\alpha}_{t-1})\mathbf{I})\)</span>. Substituting both
+          expressions into the Bayes rule expansion of the ground truth
+          denoising step (intermediate steps have been omitted for
+          brevity):</p>
+          <p><span class="math display">\[
+          \begin{aligned}
+          q(x_{t-1}|x_{t}, x_0)
+          &amp;= \frac{q(x_{t}|x_{t-1}, x_0)q(x_{t-1}|x_0)}{q(x_{t}|
+          x_0)}\\
+          &amp;= {\frac{\mathcal{N}(x_{t} ; \sqrt{\alpha_t} x_{t-1}, (1
+          - \alpha_t)\textbf{I})\mathcal{N}(x_{t-1} ;
+          \sqrt{\bar\alpha_{t-1}}x_0, (1 - \bar\alpha_{t-1})
+          \textbf{I})}{\mathcal{N}(x_{t} ; \sqrt{\bar\alpha_{t}}x_0, (1
+          - \bar\alpha_{t})\textbf{I})}}\\
+          &amp;\propto {\text{exp}\left\{-\left[\frac{(x_{t} -
+          \sqrt{\alpha_t} x_{t-1})^2}{2(1 - \alpha_t)} + \frac{(x_{t-1}
+          - \sqrt{\bar\alpha_{t-1}} x_0)^2}{2(1 - \bar\alpha_{t-1})} -
+          \frac{(x_{t} - \sqrt{\bar\alpha_t} x_{0})^2}{2(1 -
+          \bar\alpha_t)} \right]\right\}}\\
+          &amp;= \dots \\
+          &amp;\propto {\mathcal{N}(x_{t-1} ;}
+          \underbrace{{\frac{\sqrt{\alpha_t}(1-\bar\alpha_{t-1})x_{t} +
+          \sqrt{\bar\alpha_{t-1}}(1-\alpha_t)x_0}{1
+          -\bar\alpha_{t}}}}_{\mu_q(x_t, x_0)}, \underbrace{{\frac{(1 -
+          \alpha_t)(1 - \bar\alpha_{t-1})}{1
+          -\bar\alpha_{t}}\textbf{I}}}_{\bm{\Sigma}_q(t)})
+          \end{aligned}
+          \]</span></p>
+          <p>We have therefore shown that at each step, <span
+          class="math inline">\(x_{t-1} \sim q(x_{t-1}|x_{t},
+          x_0)\)</span> follows a normal distribution with mean <span
+          class="math inline">\(\mu_q(x_t, x_0)\)</span>, a function of
+          <span class="math inline">\(x_t\)</span> and <span
+          class="math inline">\(x_0\)</span>, and variance <span
+          class="math inline">\(\Sigma_q(t)\)</span>, a function of
+          <span class="math inline">\(\alpha\)</span> coefficients. We
+          can further leverage the reparameterization trick to express
+          <span class="math inline">\(x_0\)</span> as <span
+          class="math inline">\(\epsilon_0\)</span>:</p>
+          <p><span class="math display">\[
+          \begin{aligned}
+          \mu_q(x_t, x_0) &amp;=
+          {\frac{\sqrt{\alpha_t}(1-\bar\alpha_{t-1})x_{t} +
+          \sqrt{\bar\alpha_{t-1}}(1-\alpha_t)x_0}{1 -\bar\alpha_{t}}} \\
+          &amp;= {\frac{\sqrt{\alpha_t}(1-\bar\alpha_{t-1})x_{t} +
+          \sqrt{\bar\alpha_{t-1}}(1-\alpha_t)\frac{x_t -
+          \sqrt{1-\bar{\alpha}_t}\epsilon_0}{\sqrt{\bar{\alpha}_t}}}{1
+          -\bar\alpha_{t}}} \\
+          &amp;= \dots \\
+          &amp;= \frac{1}{\sqrt{\alpha_t}}x_t -
+          \frac{1-\alpha_t}{\sqrt{1-\bar{\alpha}_t}\sqrt{\alpha_t}}\epsilon_0
+          \end{aligned}
+          \]</span></p>
+          <p>Following <a href="https://arxiv.org/abs/2006.11239">Ho et
+          al. (2020)</a>, we can set <span
+          class="math inline">\(\Sigma_q(t)\)</span> as a constant at
+          each timestep by modelling the <span
+          class="math inline">\(\alpha\)</span> coefficients as fixed
+          hyperparameters. With that, we can rewrite the variance
+          equation as <span class="math inline">\(\Sigma_q(t) =
+          \sigma^2_q(t)\mathbf{I}\)</span>, where:</p>
+          <p><span class="math display">\[
+          \sigma^2_q(t) = \frac{(1 - \alpha_t)(1 - \bar\alpha_{t-1})}{1
+          -\bar\alpha_{t}}
+          \]</span></p>
+          <p>As we have kept the variance constant, minimizing the KL
+          divergence is simply minimizing the difference between <span
+          class="math inline">\(\mu_q(x_t, x_0)\)</span> and <span
+          class="math inline">\(\mu_\theta(x_t, t)\)</span>. Note that
+          we have no choice but to only parameterize the mean of the
+          learnt model <span class="math inline">\(\mu_\theta(x_t,
+          t)\)</span> as a function of <span
+          class="math inline">\(x_t\)</span> since <span
+          class="math inline">\(p_\theta(x_{t-1}|x_t)\)</span> does not
+          depend on <span class="math inline">\(x_0\)</span> (due to
+          Markov property).</p>
+          <p>The true denoising transition mean is expressed as:</p>
+          <p><span class="math display">\[
+          \mu_q(x_t, x_0) = \frac{1}{\sqrt{\alpha_t}}x_t -
+          \frac{1-\alpha_t}{\sqrt{1-\bar{\alpha}_t}\sqrt{\alpha_t}}\epsilon_0
+          \]</span></p>
+          <p>To optimize the model’s mean <span
+          class="math inline">\(\mu_\theta(x_t, t)\)</span>, we set it
+          to have the following form:</p>
+          <p><span class="math display">\[
+          \mu_\theta(x_t, t) = \frac{1}{\sqrt{\alpha_t}}x_t -
+          \frac{1-\alpha_t}{\sqrt{1-\bar{\alpha}_t}\sqrt{\alpha_t}}\hat{\epsilon_\theta}(x_t,
+          t)
+          \]</span></p>
+          <p>where <span
+          class="math inline">\(\hat{\epsilon}_\theta(x_t, t)\)</span>
+          is parameterized by a neural network that seeks to predict the
+          source noise <span class="math inline">\(\epsilon_0 \sim
+          \mathcal{N}(\epsilon; 0, \mathbf{I})\)</span> that lead to
+          <span class="math inline">\(x_t\)</span> from <span
+          class="math inline">\(x_0\)</span>. As such, the optimization
+          problem simplifies to:</p>
+          <p><span class="math display">\[
+          \begin{aligned}
+          &amp;\quad \argmin_{{\theta}} D_\text{KL}({q(x_{t-1}|x_t,
+          x_0)}\parallel{p_{{\theta}}(x_{t-1}|x_t)}) \\
+          &amp;= \argmin_{{\theta}}
+          D_\text{KL}({\mathcal{N}\left(x_{t-1};
+          {\mu}_q,{\Sigma}_q\left(t\right)\right)} \parallel
+          {\mathcal{N}\left(x_{t-1};
+          {\mu}_{{\theta}},{\Sigma}_q\left(t\right)\right)})\\
+          &amp;=\argmin_{{\theta}}\frac{1}{2\sigma_q^2(t)}\left[\left\lVert\frac{1}{\sqrt{\alpha_t}}x_t
+          - \frac{1 - \alpha_t}{\sqrt{1 -
+          \bar\alpha_t}\sqrt{\alpha_t}}{\hat\epsilon}_{{\theta}}(x_t, t)
+          -
+          \frac{1}{\sqrt{\alpha_t}}x_t + \frac{1 - \alpha_t}{\sqrt{1 -
+          \bar\alpha_t}\sqrt{\alpha_t}}{\epsilon}_0\right\rVert^2_2\right]\\
+          &amp;=\argmin_{{\theta}}\frac{1}{2\sigma_q^2(t)}\left[\left\lVert
+          \frac{1 - \alpha_t}{\sqrt{1 -
+          \bar\alpha_t}\sqrt{\alpha_t}}{\epsilon}_0 - \frac{1 -
+          \alpha_t}{\sqrt{1 -
+          \bar\alpha_t}\sqrt{\alpha_t}}{\hat\epsilon}_{{\theta}}(x_t,
+          t)\right\rVert^2_2\right]\\
+          &amp;=\argmin_{{\theta}}\frac{1}{2\sigma_q^2(t)}\left[\left\lVert
+          \frac{1 - \alpha_t}{\sqrt{1 -
+          \bar\alpha_t}\sqrt{\alpha_t}}({\epsilon}_0 -
+          {\hat\epsilon}_{{\theta}}(x_t, t))\right\rVert^2_2\right]\\
+          &amp;=\argmin_{{\theta}}\frac{1}{2\sigma_q^2(t)}\frac{(1 -
+          \alpha_t)^2}{(1 -
+          \bar\alpha_t)\alpha_t}\left[\left\lVert{\epsilon}_0 -
+          {\hat\epsilon}_{{\theta}}(x_t, t)\right\rVert^2_2\right]
+          \end{aligned}
+          \]</span></p>
+          <p>We can formulate our variational lower bound loss function
+          as</p>
+          <p><span class="math display">\[
+          \begin{aligned}
+          L &amp;= \mathbb{E}_{x_0, \epsilon} \Big[ \frac{(1 -
+          \alpha_t)^2}{2\sigma_q^2(t)(1 - \bar\alpha_t)\alpha_t}\left
+          \lVert{\epsilon}_0 - {\hat\epsilon}_{{\theta}}(x_t,
+          t)\right\rVert^2_2 \Big] \\
+          &amp;= \mathbb{E}_{x_0, \epsilon} \Big[
+          \frac{\beta_t^2}{2\sigma_q^2(t)(1 -
+          \bar\alpha_t)\alpha_t}\left \lVert{\epsilon}_0 -
+          {\hat\epsilon}_{{\theta}}(x_t, t)\right\rVert^2_2 \Big]
+          \tag{2}
+          \end{aligned}
+          \]</span></p>
+          <h3 id="simplification-of-loss-term">Simplification of Loss
+          Term</h3>
+          <p>Empirically, <a href="https://arxiv.org/abs/2006.11239">Ho
+          et al. (2020)</a> found that a simplified loss function
+          without the weighting term performs better:</p>
+          <p><span class="math display">\[
+          L_{\text{simple}}  = \mathbb{E}_{x_0, \epsilon} \Big[\left
+          \lVert{\epsilon}_0 - {\hat\epsilon}_{{\theta}}(x_t,
+          t)\right\rVert^2_2 \Big]
+          \]</span></p>
+          <p>which is basically just the <strong>mean squared error
+          between the noise added in the forward process and the noise
+          predicted by the model</strong>!</p>
+          <figure>
+          <img
+          src="../assets/2025-08-16-diffusion-models/Untitled%202.png"
+          alt="Training and sample algorithm from Ho et al. (2020)" />
+          <figcaption aria-hidden="true">Training and sample algorithm
+          from <a href="https://arxiv.org/abs/2006.11239">Ho et
+          al. (2020)</a></figcaption>
+          </figure>
+          <h2 id="relation-to-score-matching">Relation to Score
+          Matching</h2>
+          <p>So far, I have been covering generative models via the
+          “likelihood-based” objective, which seeks to learn a model
+          that assigns a high likelihood to the observed data samples.
+          However, there is another “score-based” interpretation which
+          seeks to model the gradient of the log probability density
+          function, a quantity known as the <em><strong>(Stein)</strong>
+          <strong>score function</strong></em>. Score-based generative
+          modelling is another rabbit hole on its own, but my goal here
+          today is just to highlight the parallels between denoising
+          diffusion generative modelling and denoising score matching in
+          score-based generative modelling. It would be helpful to
+          understand this before getting into conditional diffusion
+          models in the later section.</p>
+          <h3 id="motivation-behind-score-matching">Motivation behind
+          Score Matching</h3>
+          <p>In order to build a likelihood-based generative model,
+          given a dataset <span class="math inline">\(x = \{x_1, x_2,
+          \dots, x_N\}\)</span>, one learns a function <span
+          class="math inline">\(f_\theta (x) \in \mathbb{R}\)</span>
+          parameterized by a learnable parameter <span
+          class="math inline">\(\theta\)</span> that best explains the
+          observed data. More specifically, our goal would be to find
+          the <span class="math inline">\(\theta\)</span> that maximises
+          the log probability density function (or probability mass
+          function in the discrete case) of the data:</p>
+          <p><span class="math display">\[
+          \max_\theta\sum_{i=1}^N\log p_\theta(x_i)
+          \]</span></p>
+          <p>As you know from Probability Theory 101, for <span
+          class="math inline">\(p_\theta (x)\)</span> to be a valid
+          p.d.f., we need to make sure it is normalized such that <span
+          class="math inline">\(\int p_\theta (x) \, dx = 1\)</span>. We
+          can define a valid p.d.f. via</p>
+          <p><span class="math display">\[
+          p_\theta (x) = \frac{e^{-f_\theta(x)}}{Z_\theta} \tag{3}
+          \]</span></p>
+          <p>where <span class="math inline">\(Z_\theta = \int
+          e^{-f_\theta(x)}dx\)</span> is the normalizing constant and
+          <span class="math inline">\(f_\theta (x)\)</span> in this case
+          is often called the energy function.</p>
+          <p>The fundamental limitation behind likelihood-based models
+          is that can be intractable to compute the normalizing constant
+          <span class="math inline">\(Z_\theta\)</span>, especially if
+          <span class="math inline">\(x\)</span> is usually
+          high-dimensional and <span class="math inline">\(f_\theta
+          (x)\)</span> is highly complex and nonlinear. One way to avoid
+          computing <span class="math inline">\(Z_\theta\)</span> is via
+          approximation methods. For example, in DDPMs, we relied on
+          variational inference and used the ELBO as a surrogate
+          objective to maximise the log likelihood of the data.</p>
+          <p>Score-based models are motivated by this fundamental
+          limitation and offers an alternative that avoids calculating
+          or approximating the normalization constant by learning the
+          score function<span class="math inline">\(\nabla_x \log
+          p_\theta (x)\)</span> of the distribution instead. By taking
+          the derivative of the log of the unnormalized density in
+          Equation 3, we can see that:</p>
+          <p><span class="math display">\[
+          \begin{aligned}
+          \nabla_x \log p_\theta (x) &amp;= \nabla_x
+          \log\frac{e^{-f_\theta(x)}}{Z_\theta} \\
+          &amp;= \underbrace{\nabla_x \log\frac{1}{Z_\theta}}_{=0} +
+          \nabla_x \log e^{-f_\theta(x)} \\
+          &amp;= -\nabla_x f_\theta(x) \\
+          &amp;\approx s_\theta(x)
+          \end{aligned}
+          \]</span></p>
+          <p>where <span class="math inline">\(s_\theta(x)\)</span> is
+          our score-based model that learns <span
+          class="math inline">\(\theta\)</span> that best approximates
+          <span class="math inline">\(\nabla_x \log p (x)\)</span>.</p>
+          <p>It is intuitive to see that <span
+          class="math inline">\(s_\theta(x)\)</span> is independent of
+          the normalization constant <span
+          class="math inline">\(Z_\theta\)</span>. And to train
+          score-based models, we can simply minimize the expected Fisher
+          Divergence between the <span class="math inline">\(s_\theta
+          (x)\)</span> and the score function:</p>
+          <p><span class="math display">\[
+          \begin{aligned}
+          \hat{\theta} &amp;= \argmin_{\theta}
+          \frac{1}{2}\mathbb{E}_{p(x)} \Big[ \|  \nabla_x \log p(x)
+          -  s_\theta(x)  \|^2_2 \Big] \tag{4}
+          \end{aligned}
+          \]</span></p>
+          <p>Intuitively, the Fisher Divergence measures the squared
+          <span class="math inline">\(\ell_2\)</span> distance between
+          the ground truth score function and the score-based model.
+          This is what is known as <strong><em>score
+          matching</em></strong>. Instead of directly maximizing the
+          likelihood function, score matching instead tries to find a
+          <span class="math inline">\(\theta\)</span> such that the
+          gradient of the model’s log likelihood is approximately the
+          same as the gradient of the data distribution’s log
+          likelihood, circumventing the need to work with the
+          normalization constant.</p>
+          <p>However, a problem here is that it requires access to <span
+          class="math inline">\(\nabla_x \log p(x)\)</span> dependent on
+          an unknown <span class="math inline">\(p(x)\)</span>, which is
+          the same limitation faced by likelihood-based methods.
+          Fortunately, <a
+          href="https://jmlr.org/papers/v6/hyvarinen05a.html">Hyvärinen
+          (2005)</a> showed that by applying multivariate integration by
+          parts, the objective in Equation 4 can be rewritten to not
+          rely on <span class="math inline">\(p(x)\)</span> as such:</p>
+          <p><span class="math display">\[
+          \begin{aligned}
+          \hat{\theta} &amp;= \argmin_{\theta}\mathbb{E}_{p(x)} \left[
+          \text{tr}({\nabla_x s_\theta(x)}) + \frac{1}{2}
+          \|s_\theta(x)\|^2_2 \right] \tag{5}
+          \end{aligned}
+          \]</span></p>
+          <p>where <span class="math inline">\(\nabla_x s_\theta
+          (x)\)</span> denotes the Jacobian of <span
+          class="math inline">\(s_\theta (x)\)</span>, which is also the
+          Hessian of the log-density function, and <span
+          class="math inline">\(\text{tr}(\cdot)\)</span> denotes the
+          trace of the Jacobian matrix, i.e. the sum of the elements on
+          the main diagonal of the matrix.</p>
+          <h3 id="intuitive-interpretation-of-score-matching">Intuitive
+          Interpretation of Score Matching</h3>
+          <p>We can expect the second term, <span
+          class="math inline">\(\|s_\theta(x)\|^2_2 = \| \nabla_x \log
+          p_\theta (x)\|^2_2\)</span>, to be small when the gradients of
+          the score function are close to zero, indicating a local
+          extremum of the log-likelihood. This term is closely related
+          to the maximization of the non-normalized log-likelihood.
+          However, optimizing solely the non-normalized log-likelihood
+          could lead to a trivial solution where the score function is
+          flat, i.e., it has infinite variance and assigns equal
+          probability to all <span class="math inline">\(x\)</span>.
+          Such a solution is undesirable because it fails to uniquely
+          describe the observed data distribution.</p>
+          <p>The first term, <span
+          class="math inline">\(\text{tr}({\nabla_x
+          s_\theta(x)})\)</span>, provides information about the overall
+          curvature or sharpness of the extremum. To minimize the Fisher
+          Divergence, we need this term to be negative, indicating that
+          the extremum is a maximum. A more negative trace of the
+          Hessian suggests a sharper maximum of the log-likelihood for
+          the observed data points, <span
+          class="math inline">\(x\)</span>, as opposed to a flat
+          maximum. Therefore, the trace term favors steeper maxima that
+          more uniquely reflects the data distribution, compared to a
+          flat maxima where similar probabilities are assigned to all
+          data points. In some sense, this term acts as a proxy for the
+          normalization constant in traditional density estimation. It
+          encourages the learned score function to behave like the
+          gradient of a properly normalized log-density function by
+          penalizing score functions that would correspond to optimizing
+          only the non-normalized density function.</p>
+          <h3 id="langevin-dynamics">Langevin Dynamics</h3>
+          <p>Okay, now that we have trained a score-based model <span
+          class="math inline">\(s_\theta (x) \approx \nabla_x \log
+          p(x)\)</span>, how do we even generate samples using it?</p>
+          <figure>
+          <img
+          src="../assets/2025-08-16-diffusion-models/Untitled%203.png"
+          alt="Image from Luo (2022)" />
+          <figcaption aria-hidden="true">Image from <a
+          href="https://arxiv.org/pdf/2208.11970">Luo
+          (2022)</a></figcaption>
+          </figure>
+          <p>Intuitively, what the model has learnt is a gradient vector
+          field over the density function of <span
+          class="math inline">\(x\)</span> and each point in the field
+          indicates the direction and rate of fastest increase
+          (represented by the arrows in the image above). Langevin
+          dynamics provide a Markov Chain Monte Carlo procedure to
+          sample from <span class="math inline">\(p(x)\)</span> with
+          access to only <span class="math inline">\(\nabla_x \log
+          p(x)\)</span>. Starting from any arbitrary point <span
+          class="math inline">\(x_0 \sim \pi(x)\)</span> (represented by
+          blue dots in image above) sampled from some assumed prior
+          distribution <span class="math inline">\(\pi\)</span>
+          (e.g. Gaussian), we can iteratively perform the following
+          updates to climb towards the modes of the distribution
+          (represented by red lines in image above):</p>
+          <p><span class="math display">\[
+          x_{t+1} \leftarrow x_t + \epsilon \nabla_x \log p(x) +
+          \sqrt{2\epsilon}z_t,  \quad t=0,1,\dots,K
+          \]</span></p>
+          <p>where <span class="math inline">\(z_t \sim
+          \mathcal{N}(0,I)\)</span>. The addition of the Gaussian noise
+          helps to introduce stochasticity to the generative process,
+          allowing the samples to converge towards different modes other
+          than the nearest. When <span
+          class="math inline">\(\epsilon\)</span> is sufficiently small
+          and <span class="math inline">\(K\)</span> is sufficiently
+          large, we would produce a sample from <span
+          class="math inline">\(p(x)\)</span> under some regularity
+          conditions!</p>
+          <h3
+          id="pitfalls-of-naive-score-based-generative-modelling">Pitfalls
+          of Naive Score-based Generative Modelling</h3>
+          <p>There are pitfalls involved with this naive approach of
+          sampling via Langevin dynamics. Firstly, in regions where few
+          data points are available for training the model, the
+          estimated score functions can be inaccurate. This is because
+          the model is trained on the Fisher divergence which is an
+          expectation over <span class="math inline">\(p(x)\)</span>,
+          i.e.</p>
+          <p><span class="math display">\[
+          \mathbb{E}_{p(x)} \Big[ \|  \nabla_x \log p(x)
+          -  s_\theta(x)  \|^2_2 \Big] = \int p(x) \|  \nabla_x \log
+          p(x) -  s_\theta(x)  \|^2_2 \, dx
+          \]</span></p>
+          <p>Because the squared <span
+          class="math inline">\(\ell_2\)</span> difference is weighted
+          by <span class="math inline">\(p(x)\)</span>, the errors are
+          largely ignored in low density regions where <span
+          class="math inline">\(p(x)\)</span> is small and results in an
+          inaccurate learned model. Since sampling via Langevin dynamics
+          involves starting from a random location in the
+          high-dimensional space which is likely to be in low density
+          regions (it is unlikely to choose a point that corresponds to
+          an actual sample), an inaccurate score-based model derails the
+          sampling trajectory right from the beginning.</p>
+          <p>Secondly, the manifold hypothesis poses a problem. The
+          manifold hypothesis postulates that real-world data often lies
+          in a low-dimensional manifold embedded in a high-dimensional
+          space and it has been empirically observed in many datasets.
+          As such, points in the high-dimensional space outside of the
+          low-dimensional manifold would have probability zero and an
+          undefined <span class="math inline">\(\nabla_x \log
+          p(x)\)</span>. This causes the score function to be
+          ill-defined. Moreover, in order to represent the objective
+          using Equation 5, it would require that the support of <span
+          class="math inline">\(p(x)\)</span> is over the whole
+          space.</p>
+          <h3
+          id="score-based-generative-modeling-with-multiple-noise-perturbations"><strong>Score-based
+          Generative Modeling with Multiple Noise
+          Perturbations</strong></h3>
+          <p>As it turns out, the above-mentioned pitfalls can be
+          bypassed simply by perturbing data points with Gaussian noise.
+          By injecting small amounts of Gaussian noise into the data,
+          the noised data distribution would have full support and is no
+          longer confined to a low-dimensional manifold. When the noise
+          magnitude is sufficiently large, it would also populate low
+          data density regions and thereby improve the accuracy of the
+          score function.</p>
+          <p><a href="https://arxiv.org/abs/1907.05600">Song &amp; Ermon
+          (2019)</a> proposed to perturb the data with a increasing
+          sequence of isotropic Gaussian noise <span
+          class="math inline">\(\{\sigma_t\}_{t=1}^T\)</span> to obtain
+          a noise-perturbed distribution</p>
+          <p><span class="math display">\[
+          p_{\sigma_t}(x) = \int p(x) \mathcal{N} (x_t; x, \sigma_t^2I)
+          \, dx
+          \]</span></p>
+          <p>Then, they estimate the score function of the
+          noise-perturbed distribution by training a
+          <em>Noise-Conditioned Score Network (NCSN)</em> <span
+          class="math inline">\(s_\theta (x, t)\)</span> to jointly
+          estimate the scores of all perturbed data at different noise
+          levels. The objective then becomes</p>
+          <p><span class="math display">\[
+          \begin{aligned}
+          \hat{\theta} &amp;= \argmin_{\theta} \sum_{t=1}^T \lambda
+          (t)\mathbb{E}_{p_{\sigma_t}(x_t)} \Big[ \|  \nabla_{x_t} \log
+          p_{\sigma_t} (x_t) -  s_\theta(x,t)  \|^2_2 \Big] \tag{6}
+          \end{aligned}
+          \]</span></p>
+          <p>where <span class="math inline">\(\lambda(t)\)</span> is a
+          positive weighing function. After training <span
+          class="math inline">\(s_\theta (x, t)\)</span>, we can then
+          produce samples by running Langevin dynamics for each <span
+          class="math inline">\(t = T, T-1, \dots, 1\)</span> and this
+          method is called <strong>annealed Langevin dynamics</strong>
+          since the noise scale <span
+          class="math inline">\(\sigma_t\)</span> decreases (anneals)
+          with each time step.</p>
+          <p>Notice how this procedure is very similar to the one in
+          DDPMs. In fact, their objectives can be reconciled with the
+          same formulation and that is what we’re going to show. For a
+          Gaussian data distribution <span class="math inline">\(x \sim
+          \mathcal{N}(\mu, \sigma^2 I)\)</span>, the derivative of the
+          log density function is</p>
+          <p><span class="math display">\[
+          \begin{aligned}
+          \nabla_x \log p(x) &amp;= \nabla_x \Big[ \log
+          (\frac{1}{\sigma\sqrt{2\pi}}e^{-\frac{1}{2}\frac{(x_t -
+          \mu)^2}{\sigma^2}}) \Big] \\
+          &amp;= \nabla_x(-\frac{1}{2\sigma^2}(x-\mu)^2) \\
+          &amp;= -\frac{x-\mu}{\sigma^2} \\
+          &amp;= -\frac{\epsilon}{\sigma}
+          \end{aligned}
+          \]</span></p>
+          <p>where <span class="math inline">\(\epsilon \sim
+          \mathcal{N}(0, I)\)</span>. Recall from Equation 1 in DDPM,
+          the posterior of a noised <span
+          class="math inline">\(x_t\)</span> given initial <span
+          class="math inline">\(x_0\)</span> is <span
+          class="math inline">\(q(x_t | x_0) \sim \mathcal{N}(x_t;
+          \sqrt{\bar{a}_t}x_0, (1-\bar{a}_t)\mathbf{I})\)</span>. As
+          such, we can rewrite the gradient of the log density of each
+          noised sample <span class="math inline">\(x_t\)</span> as:</p>
+          <p><span class="math display">\[
+          \begin{aligned}
+          \nabla_{x_t}\log p(x_t)
+          &amp;=\mathbb{E}_{q(x_0)}\Big[\nabla_{x_t}\log q(x_t | x_o)
+          \Big] \\
+          &amp;= \mathbb{E}_{q(x_0)}\Big[-
+          \frac{\epsilon_0}{\sqrt{1-\bar{a}_t}}\Big] \\
+          &amp;= \int-q(x)\cdot\frac{\epsilon_0}{\sqrt{1-\bar{a}_t}} \,
+          dx \\
+          &amp;= -\frac{\epsilon_0}{\sqrt{1-\bar{a}_t}}\int q(x) \, dx
+          \\
+          &amp;= -\frac{\epsilon_0}{\sqrt{1-\bar{a}_t}} \tag{6}
+          \end{aligned}
+          \]</span></p>
+          <p>where <span class="math inline">\(\epsilon_0 \in
+          \mathcal{N}(\epsilon; 0, I)\)</span> refers to the source
+          noise that produces <span class="math inline">\(x_t\)</span>
+          from the original image <span
+          class="math inline">\(x_0\)</span>.</p>
+          <p>As it turns out, the gradient of the log density function
+          in NCSN and the source noise in DDPM are off by only a
+          constant factor that scales with time (i.e. <span
+          class="math inline">\(-\frac{1}{\sqrt{1-\bar{a}_t}}\)</span>)!
+          Intuitively, the reason the score function in NCSN points in
+          the opposite (negative) direction of the source noise in DDPM
+          is that the score function indicates the direction in which
+          the log density is maximized, whereas the source noise in DDPM
+          corrupts the image away from its original state. Therefore,
+          moving in the opposite direction of the source noise
+          effectively “denoises” the image and increases the log density
+          of the resulting sample.</p>
+          <p>With that, we have shown that the <span
+          class="math inline">\(\epsilon\)</span>-prediction
+          parameterization in DDPM simplifies the diffusion model’s
+          variational bound to an objective that closely resembles
+          denoising score matching in NCSN!</p>
+          <h2 id="conditional-generation">Conditional Generation</h2>
+          <p>As of now, we have only focused on modelling the sample
+          distribution <span class="math inline">\(p(x)\)</span>.
+          However, it would be more practical if we could learn a
+          conditional distribution <span
+          class="math inline">\(p(x|y)\)</span> that allows us to
+          generate images conditioned on conditional information <span
+          class="math inline">\(y\)</span> which can be a class label, a
+          text encoding in image-text generation, or even a
+          low-resolution image to perform super-resolution on.
+          Conditional generation forms the backbone of state-of-the-art
+          image-to-text models such as <a
+          href="https://arxiv.org/abs/2204.06125v1">DALL-E 2</a> and <a
+          href="https://arxiv.org/abs/2205.11487">Imagen</a>.</p>
+          <p>An intuitive way to incorporate conditioning information
+          <span class="math inline">\(y\)</span> into the generative
+          process would be to condition each transition step on it as
+          such:</p>
+          <p><span class="math display">\[
+          p(x_{0:T} | y) = p(x_T) \prod_{t=1}^T p_\theta(x_{t-1}|x_t, y)
+          \]</span></p>
+          <p>This would allow us to learn the model as before, by
+          predicting the source noise <span
+          class="math inline">\(\hat{\epsilon}_\theta(x_t, t, y) \approx
+          \epsilon_0\)</span>. However, this formulation may cause the
+          model to ignore the conditioning information. As such,
+          classifier guidance was introduced to control the amount of
+          weight given to the conditioning information, at the cost of
+          sample diversity. Classifier guidance provides a way to steer
+          the sampling process in the direction of the image space that
+          maximizes the probability of the denoised image belonging to
+          the desired class.</p>
+          <h3 id="classifier-guided-diffusion">Classifier Guided
+          Diffusion</h3>
+          <p>The first way is to introduce guidance is by training a
+          separate classifier model <span
+          class="math inline">\(p(y|x_t)\)</span> on noisy samples <span
+          class="math inline">\(x_t\)</span>. At every step <span
+          class="math inline">\(t\)</span> of the denoising process, we
+          can then use the gradients of the classifier, i.e. <span
+          class="math inline">\(\nabla_{x_T} \log p(y|x_t)\)</span>, to
+          guide the denoising process towards an arbitrary input
+          feature, which could be a class label, <span
+          class="math inline">\(y\)</span>.</p>
+          <p>To understand why this works, we can make use of the Bayes
+          rule:</p>
+          <p><span class="math display">\[
+          \begin{aligned}
+          \nabla_{x_t} \log p(x_t | y) &amp;= \nabla_{x_t}
+          \log\Big(\frac{p(x_t)p(y|x_t)}{p(y)}\Big) \\
+          &amp;= \nabla_{x_t} \log p(x_t) + \nabla_{x_t} \log p(y|x_t) -
+          \nabla_{x_t} \log p(y) \\
+          &amp;= \underbrace{\nabla_{x_t} \log
+          p(x_t)}_{\text{unconditional gradient}} +
+          \underbrace{\nabla_{x_t} \log p(y|x_t)}_{\text{classifier
+          gradient}} \tag{7}
+          \end{aligned}
+          \]</span></p>
+          <p>In order to have control over the degree to which the
+          conditional model adheres to the conditioning information, <a
+          href="https://arxiv.org/abs/2105.05233">Dhariwal and Nichol
+          (2021)</a> scales the conditioning term by a
+          hyperparameter:</p>
+          <p><span class="math display">\[
+          \nabla_{x_t}\log p_\gamma(x_t |y) = \nabla_{x_t} \log p(x_t) +
+          \gamma\nabla_{x_t} \log p(y|x_t) \tag{8}
+          \]</span></p>
+          <p>where <span class="math inline">\(\gamma\)</span> is called
+          the guidance scale. <span
+          class="math inline">\(\gamma\)</span> essentially controls how
+          much our learned conditional model cares about the
+          conditioning information. The greater <span
+          class="math inline">\(\gamma\)</span> is, the more likely the
+          generated samples reflect the conditioned information, albeit
+          at the cost of sample diversity. Intuitively, the score
+          function <span class="math inline">\(\nabla_{x_t} \log
+          p(x_t)\)</span> points in the direction of the image space
+          that maximises the likelihood of the resulting image and the
+          classifier gradients <span class="math inline">\(\nabla_{x_t}
+          \log p(y|x_t)\)</span> points in the direction of the image
+          space that maximises the likelihood of the conditioning
+          information. Combining these gradients together results in a
+          step that balances between both objectives depending on <span
+          class="math inline">\(\gamma\)</span>.</p>
+          <figure>
+          <img
+          src="../assets/2025-08-16-diffusion-models/Untitled%204.png"
+          alt="Image from Dieleman (2023)" />
+          <figcaption aria-hidden="true">Image from <a
+          href="https://sander.ai/2023/08/28/geometry.html">Dieleman
+          (2023)</a></figcaption>
+          </figure>
+          <p>Equation 8 requires that we combine the output of a
+          denoising score-based generative model and the gradients of
+          the classifier. However, recall that denoising score matching
+          has a similar interpretation as <span
+          class="math inline">\(\epsilon\)</span>-prediction
+          parameterization in DDPM, i.e. <span
+          class="math inline">\(\log p(x_t) =
+          -\frac{1}{\sqrt{1-\hat{a}_t}}\epsilon_\theta(x_t, t)\)</span>.
+          Plugging this into Equation 8 we get:</p>
+          <p><span class="math display">\[
+          \begin{aligned}
+          \nabla_{x_t}\log p_\gamma(x_t |y) &amp;=
+          -\frac{1}{\sqrt{1-\hat{a}_t}}\epsilon_\theta(x_t, t) + \gamma
+          \nabla_{x_t}\log p(y|x_t) \\
+          &amp;= -\frac{1}{\sqrt{1-\hat{a}_t}} \Big[\epsilon_\theta(x_t,
+          t) - \gamma \sqrt{1-\hat{a}_t} \nabla_{x_t}\log p(y|x_t)\Big]
+          \end{aligned}
+          \]</span></p>
+          <p>As such, our new classifier-guided DDPM would take the
+          form:</p>
+          <p><span class="math display">\[
+          \epsilon_\theta (x_t;t,y) = \epsilon_\theta(x_t, t) - \gamma
+          \sqrt{1-\hat{a}_t} \nabla_x\log p(y|x_t) \tag{9}
+          \]</span></p>
+          <p>There are a few things to clarify here:</p>
+          <ol type="1">
+          <li>Both the classifier and diffusion models are trained on
+          noisy images independently.</li>
+          <li>The reason behind training the classifier on the noisy
+          image samples instead of the original images is to allow it to
+          be robust against the distortion introduced by the forward
+          trajectory of the diffusion models. This is also what allows
+          us to apply the gradients of the classifier for guidance on
+          every step of the denoising process.</li>
+          <li>In the neural network paradigm, the gradient of the
+          classifier is calculated by backpropagating through the layers
+          of trained classifier from the output logits back to the input
+          image</li>
+          </ol>
+          <h3 id="classifier-free-guidance">Classifier-free
+          Guidance</h3>
+          <p>The drawback of the classifier guidance is that it requires
+          the training of two separate models, the diffusion model and
+          the classifier. Moreover, this classifier must be trained on
+          noisy data so it is generally not possible to plug in a
+          pre-trained classifier. As such, <a
+          href="https://openreview.net/forum?id=qw8AKxfYbI">Ho &amp;
+          Salimans (2021)</a> introduced <em>classifier-free diffusion
+          guidance</em>, which allows us to jointly train a conditional
+          and unconditional diffusion model using a singular neural
+          network, without learning a separate classifier. This model,
+          denoted <span
+          class="math inline">\(\epsilon_\theta(x_t;t,y)\)</span>, is
+          trained on the labelled data <span
+          class="math inline">\((x,y)\)</span> but the conditioning
+          information <span class="math inline">\(y\)</span> is
+          discarded periodically to allow the model to generate images
+          unconditionally, i.e. <span
+          class="math inline">\(\epsilon_\theta(x_t;t) =
+          \epsilon_\theta(x_t;t,y =\varnothing)\)</span>.</p>
+          <p>To train <span
+          class="math inline">\(\epsilon_\theta(x_t;t,y)\)</span>
+          without a classifier, we have to replace Equation 9 to not
+          rely on its gradient. First, by switching the terms around in
+          Equation 7 we get</p>
+          <p><span class="math display">\[
+          \begin{aligned}
+          \nabla_{x_t}\log p(y|x_t) &amp;= \nabla_{x_t} \log p(x_t | y)
+          - \nabla_{x_t} \log p(x_t) \\
+          &amp;= -\frac{1}{\sqrt{1-\hat{a}_t}} \Big[\epsilon_\theta
+          (x_t;t,y)  - \epsilon_\theta (x_t;t) \Big]
+          \end{aligned}
+          \]</span></p>
+          <p>Plugging this into Equation 9 we get:</p>
+          <p><span class="math display">\[
+          \begin{aligned}
+          \epsilon_\theta (x_t;t,y) &amp;= \epsilon_\theta(x_t, t) -
+          \gamma \sqrt{1-\hat{a}_t} \nabla_x\log p(y|x_t) \\
+          &amp;= \epsilon_\theta(x_t, t) + \gamma \Big[\epsilon_\theta
+          (x_t;t,y)  - \epsilon_\theta (x_t;t) \Big] \\
+          &amp;= (\gamma+1)\epsilon_\theta (x_t;t,y)
+          -  \gamma\epsilon_\theta (x_t;t)\\
+          \end{aligned}
+          \]</span></p>
+          <p>This new equation has no classifier gradient present.</p>
+          <p>To implement this in a neural network, you can simply
+          concatenate the conditioning information to the end of the
+          flattened image vector and replace the conditioning
+          information with fixed constant values (e.g. zeros)
+          periodically. The neural network would then learn to treat
+          those fixed constant values as the <span
+          class="math inline">\(\varnothing\)</span> conditioning and
+          perform unconditional generation when inputted with them.</p>
+          <h2 id="summary">Summary</h2>
+          <p>To wrap up, diffusion models represent a fascinating
+          approach to data generation and denoising tasks in the realm
+          of deep learning. At their core, these models leverage a
+          process called diffusion, which involves progressively
+          applying Gaussian noise to an original sample distribution.
+          The diffusion model then aims to learn the parameters that
+          maximize the Variational Lower Bound (VLB) during the
+          denoising step.</p>
+          <p>Notably, diffusion models often excel in terms of
+          generalizability and training stability, steering clear of
+          pitfalls like mode collapse commonly encountered by GANs.
+          However, GANs are still considerably more computationally
+          efficient compared to diffusion models. This is due to the
+          fact that GANs can generate an image in a single forward pass
+          but diffusion models rely on a long Markov chain of denoising
+          steps.</p>
+          <p>Still, diffusion models have proved their incredible
+          capabilities in generating realistic samples. It’s highly
+          likely that we’ll witness the emergence of even more powerful
+          diffusion-based generative models, pushing the boundaries of
+          generative modeling to new heights in the years ahead!</p>
+          <h2 id="references">References</h2>
+          <p>[1] Goodfellow, Ian &amp; Pouget-Abadie, Jean &amp; Mirza,
+          Mehdi &amp; Xu, Bing &amp; Warde-Farley, David &amp; Ozair,
+          Sherjil &amp; Courville, Aaron &amp; Bengio, Y.. (2014).
+          Generative Adversarial Networks. Advances in Neural
+          Information Processing Systems. 3. 10.1145/3422622.</p>
+          <p>[2] Dhariwal, Prafulla &amp; Nichol, Alex. (2021).
+          Diffusion Models Beat GANs on Image Synthesis.</p>
+          <p>[3] Zhang, H., Xu, T., Li, H., Zhang, S., Wang, X., Huang,
+          X., &amp; Metaxas, D.N. (2016). StackGAN: Text to
+          Photo-Realistic Image Synthesis with Stacked Generative
+          Adversarial Networks. <em>2017 IEEE International Conference
+          on Computer Vision (ICCV)</em>, 5908-5916.</p>
+          <p>[4] Xu, T., Zhang, P., Huang, Q., Zhang, H., Gan, Z.,
+          Huang, X., &amp; He, X. (2017). AttnGAN: Fine-Grained Text to
+          Image Generation with Attentional Generative Adversarial
+          Networks. <em>2018 IEEE/CVF Conference on Computer Vision and
+          Pattern Recognition</em>, 1316-1324.</p>
+          <p>[5] Shoshan, A., Bhonker, N., Kviatkovsky, I., &amp;
+          Medioni, G.G. (2021). GAN-Control: Explicitly Controllable
+          GANs. <em>2021 IEEE/CVF International Conference on Computer
+          Vision (ICCV)</em>, 14063-14073.</p>
+          <p>[6] Sohl-Dickstein, J., Weiss, E., Maheswaranathan, N.
+          &amp; Ganguli, S.. (2015). Deep Unsupervised Learning using
+          Nonequilibrium Thermodynamics. Proceedings of the 32nd
+          International Conference on Machine Learning, in Proceedings
+          of Machine Learning Research 37:2256-2265</p>
+          <p>[7] Ho, J., Jain, A., &amp; Abbeel, P. (2020). Denoising
+          Diffusion Probabilistic Models. <em>ArXiv,
+          abs/2006.11239</em>.</p>
+          <p>[8] Feller, W. (1949). On the Theory of Stochastic
+          Processes, with Particular Reference to Applications.</p>
+          <p>[9] Weng, Lilian. (2021). What are diffusion models?
+          Lil’Log. <a
+          href="https://lilianweng.github.io/posts/2021-07-11-diffusion-models/">https://lilianweng.github.io/posts/2021-07-11-diffusion-models/</a></p>
+          <p>[10] Luo, C. (2022). Understanding Diffusion Models: A
+          Unified Perspective. <em>ArXiv, abs/2208.11970</em>.</p>
+          <p>[11] Karagiannakos, S., Adaloglou, N. (2022). Diffusion
+          models: toward state-of-the-art image generation. <a
+          href="https://theaisummer.com/diffusion-models/">https://theaisummer.com/diffusion-models/</a></p>
+          <p>[12] Song, Y., &amp; Stefano Ermon. (2019). Generative
+          Modeling by Estimating Gradients of the Data
+          Distribution. <em>ArXiv (Cornell University)</em>.
+          https://doi.org/10.48550/arxiv.1907.05600</p>
+          <p>[13] Dhariwal, P., &amp; Nichol, A. Q. (2021). Diffusion
+          Models Beat GANs on Image Synthesis. <em>Neural Information
+          Processing Systems</em>, <em>34</em>.</p>
+          <p>[14] Zeng, F. P., &amp; Wang, O. (2023). Score-Based
+          Diffusion Models. <em>fanpu.io</em>. <a
+          href="https://fanpu.io/blog/2023/score-based-diffusion-models/">https://fanpu.io/blog/2023/score-based-diffusion-models/</a></p>
+          <p>[15] Hyvärinen, A. (2005). Estimation of Non-Normalized
+          Statistical Models by Score Matching. <em>Journal of Machine
+          Learning Research</em>, <em>6</em>(24),
+          695–709. http://jmlr.org/papers/volume6/hyvarinen05a/old.pdf</p>
+        </div>
+      </div>
+    </div>
   </body>
 </html> 

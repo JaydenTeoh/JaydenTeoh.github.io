@@ -145,13 +145,13 @@ where $\epsilon \sim \mathcal{N}(\epsilon; 0, \mathbf{I})$. To express $q(x_{t}|
 
 $$
 \begin{aligned}
-x_t &= \sqrt{\alpha_t}x_{t-1} + \sqrt{1- \alpha_t}\epsilon^*_{t-1} \\
-&= \sqrt{\alpha_t a_{t-1}}x_{t-2} + \sqrt{\alpha_t - \alpha_t a_{t-1}}\epsilon^*_{t-2} + \sqrt{1-\alpha_t}\epsilon^*_{t-1} \\
-&=  \sqrt{\alpha_t a_{t-1}}x_{t-2} + \sqrt{\alpha_t - \alpha_t a_{t-1} + 1 - \alpha_t}\epsilon_{t-2} \\
-&= \dots \\
-&= \sqrt{\prod_{i=1}^t a_i}x_0 + \sqrt{1-\prod_{i=1}^t a_i}\epsilon_0 \\
-&= \sqrt{\bar{a}_t}x_0 + \sqrt{1-\bar{a}_t}\epsilon_0 \\
-&\sim \mathcal{N}(x_t; \sqrt{\bar{a}_t}x_0, (1-\bar{a}_t)\mathbf{I}) \\
+    x_t &= \sqrt{\alpha_t}x_{t-1} + \sqrt{1- \alpha_t}\epsilon^*_{t-1} \\
+    &= \sqrt{\alpha_t a_{t-1}}x_{t-2} + \sqrt{\alpha_t - \alpha_t a_{t-1}}\epsilon^*_{t-2} + \sqrt{1-\alpha_t}\epsilon^*_{t-1} \\
+    &=  \tag{1} \sqrt{\alpha_t a_{t-1}}x_{t-2} + \sqrt{\alpha_t - \alpha_t a_{t-1} + 1 - \alpha_t}\epsilon_{t-2} \\
+    &= \dots \\
+    &= \sqrt{\prod_{i=1}^t a_i}x_0 + \sqrt{1-\prod_{i=1}^t a_i}\epsilon_0 \\
+    &= \sqrt{\bar{a}_t}x_0 + \sqrt{1-\bar{a}_t}\epsilon_0 \\
+    &\sim \mathcal{N}(x_t; \sqrt{\bar{a}_t}x_0, (1-\bar{a}_t)\mathbf{I})
 \end{aligned}
 $$
 
@@ -352,7 +352,7 @@ $$
 \end{aligned}
 $$
 
-where $\epsilon \sim \mathcal{N}(0, I)$. Recall from [earlier](https://www.notion.so/Notes-on-Diffusion-Models-143444a757834040a5dd5b6c935b62b8?pvs=21) in DDPM, the posterior of a noised $x_t$ given initial $x_0$ is $q(x_t | x_0) \sim \mathcal{N}(x_t; \sqrt{\bar{a}_t}x_0, (1-\bar{a}_t)\mathbf{I})$. As such, we can rewrite the gradient of the log density of each noised sample $x_t$ as:
+where $\epsilon \sim \mathcal{N}(0, I)$. Recall from Equation 1 in DDPM, the posterior of a noised $x_t$ given initial $x_0$ is $q(x_t | x_0) \sim \mathcal{N}(x_t; \sqrt{\bar{a}_t}x_0, (1-\bar{a}_t)\mathbf{I})$. As such, we can rewrite the gradient of the log density of each noised sample $x_t$ as:
 
 $$
 \begin{aligned}

@@ -145,7 +145,6 @@ span.highlight {
 header {
   background-color: #f8f9fa;
   border-bottom: 1px solid #dee2e6;
-  padding: 1rem 0;
   position: sticky;
   top: 0;
   z-index: 1000;
