@@ -102,9 +102,10 @@
 }
 
 .bio-text p {
-  margin: 0 0 1rem;
+  margin: 0 0 0.9rem;
   color: var(--text);
   font-weight: 400;
+  line-height: 1.7;
 }
 
 .bio-portrait img {
@@ -118,10 +119,12 @@
 .contact-row {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   gap: 0.5rem 0.75rem;
   align-items: baseline;
-  font-size: 0.9rem;
-  margin-top: 1.5rem !important;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-top: 1.75rem !important;
 }
 
 .contact-row .sep {
@@ -130,7 +133,7 @@
 
 /* ---------- Sections ---------- */
 .section {
-  margin-top: 2.25rem;
+  margin-top: 3rem;
 }
 
 .section-heading {
@@ -140,16 +143,19 @@
   text-transform: lowercase;
   letter-spacing: 0.01em;
   border-top: 1px solid var(--border);
-  padding-top: 1.75rem;
+  padding-top: 2rem;
 }
 
 .section-blurb {
   margin: 0 0 0.5rem;
   font-weight: 400;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.65;
 }
 
 .section-fineprint {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   color: var(--text-muted);
   margin: 0 0 1.5rem;
 }
@@ -161,29 +167,30 @@
 }
 
 .plain-list li {
-  margin: 0 0 0.75rem;
+  margin: 0 0 0.85rem;
   font-weight: 400;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.65;
+}
+
+.plain-list li strong {
+  color: var(--text);
 }
 
 /* ---------- Paper cards ---------- */
 .paper-list {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
-  padding-top: 0.5rem;
+  gap: 3rem;
+  padding-top: 0.75rem;
 }
 
 .paper-card {
   display: grid;
   grid-template-columns: 160px minmax(0, 1fr);
-  gap: 1.5rem;
+  gap: 1.75rem;
   align-items: start;
-  padding: 1rem 0;
-  border-bottom: 1px solid var(--border);
-}
-
-.paper-card:last-child {
-  border-bottom: none;
 }
 
 .paper-thumb-wrap {
@@ -229,12 +236,17 @@
 .paper-venue,
 .paper-links,
 .paper-blurb {
-  margin: 0 0 0.4rem;
-  font-size: 0.9rem;
+  margin: 0 0 0.35rem;
+  font-size: 0.85rem;
   font-weight: 400;
+  line-height: 1.55;
 }
 
 .paper-authors {
+  color: var(--text-secondary);
+}
+
+.paper-venue {
   color: var(--text-secondary);
 }
 
@@ -247,50 +259,57 @@
   font-weight: 700;
 }
 
+.paper-links {
+  color: var(--text-muted);
+}
+
 .paper-links a {
   color: var(--link);
 }
 
 .paper-blurb {
-  color: var(--text);
-  margin-top: 0.5rem;
+  color: var(--text-secondary);
+  margin-top: 0.6rem;
+  font-size: 0.9rem;
 }
 
 /* ---------- Miscellanea ---------- */
 .misc-row {
   display: grid;
-  grid-template-columns: 160px minmax(0, 1fr);
-  gap: 1.5rem;
+  grid-template-columns: 140px minmax(0, 1fr);
+  gap: 1.75rem;
   align-items: start;
-  margin-bottom: 1.25rem;
+  margin-bottom: 2rem;
 }
 
 .misc-tag {
-  width: 160px;
-  padding: 1rem;
-  border-radius: 6px;
+  width: 140px;
+  padding: 0.6rem 0.75rem;
+  border-radius: 4px;
   text-align: center;
-  font-weight: 700;
-  font-size: 0.95rem;
+  font-weight: 400;
+  font-size: 0.8rem;
   text-transform: lowercase;
+  letter-spacing: 0.02em;
 }
 
 .misc-tag-writing {
-  background: #fcb97d;
-  color: #1a1a1a;
+  background: #fde4ce;
+  color: #7a4416;
 }
 
 .misc-tag-service {
-  background: #c6b89e;
-  color: #1a1a1a;
+  background: #ece4d4;
+  color: #5a4a30;
 }
 
 .misc-links {
-  padding-top: 0.5rem;
+  padding-top: 0.1rem;
 }
 
 .misc-links li {
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.45rem;
+  font-size: 0.9rem;
 }
 
 /* ---------- Blog index ---------- */
