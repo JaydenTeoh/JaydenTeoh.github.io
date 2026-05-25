@@ -1,0 +1,26 @@
+{
+  "name": "jaydenteoh.github.io",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@mdx-js/rollup": "^3.1.1",
+    "@vitejs/plugin-react": "^4.7.0",
+    "rehype-katex": "^7.0.1",
+    "remark-gfm": "^4.0.1",
+    "remark-math": "^6.0.0",
+    "vite": "^5.4.21"
+  },
+  "dependencies": {
+    "@mdx-js/react": "^3.1.1",
+    "katex": "^0.16.47",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.30.3"
+  }
+}
