@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { postUrl } from '../data/posts.js'
 
 const pastelColors = [
   '#FFB3BA',
@@ -28,17 +29,18 @@ function tagColor(tag) {
 }
 
 export default function PostCard({ post }) {
+  const href = postUrl(post)
   return (
     <article className="post-card">
       {post.cover ? (
-        <Link to={`/blog/${post.slug}`} className="post-cover" aria-hidden="true">
+        <Link to={href} className="post-cover" aria-hidden="true">
           <img src={post.cover} alt="" loading="lazy" />
         </Link>
       ) : null}
 
       <div className="post-info">
         <h3 className="post-title">
-          <Link to={`/blog/${post.slug}`}>{post.title}</Link>
+          <Link to={href}>{post.title}</Link>
         </h3>
         <p className="post-date">{post.date}</p>
         {post.excerpt ? <p className="post-excerpt">{post.excerpt}</p> : null}

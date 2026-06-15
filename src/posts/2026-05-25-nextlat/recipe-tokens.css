@@ -1,0 +1,50 @@
+.nextlat-recipe-tokens {
+  margin: 1.75rem auto;
+  text-align: center;
+}
+
+.nextlat-recipe-tokens__block {
+  display: inline-block;
+  max-width: 100%;
+  padding: 0.25rem 0;
+  text-align: left;
+  line-height: 1.85;
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 1.05rem;
+  color: #2c2c2c;
+}
+
+.nextlat-recipe-tokens__token {
+  display: inline;
+  padding: 0.12em 0;
+  border-radius: 2px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+.nextlat-recipe-tokens__token[data-color='0'] {
+  background: #e8daf5;
+}
+
+.nextlat-recipe-tokens__token[data-color='1'] {
+  background: #d4edda;
+}
+
+.nextlat-recipe-tokens__token[data-color='2'] {
+  background: #f5e6d3;
+}
+
+.nextlat-recipe-tokens__token[data-color='3'] {
+  background: #fadbd8;
+}
+
+.nextlat-recipe-tokens__token[data-color='4'] {
+  background: #d1f2eb;
+}
+
+.nextlat-recipe-tokens figcaption {
+  font-size: 0.95rem;
+  color: #6b7280;
+  margin-top: 0.5rem;
+  font-style: italic;
+}

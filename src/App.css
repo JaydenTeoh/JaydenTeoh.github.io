@@ -1,11 +1,15 @@
 .app-shell {
   min-height: 100vh;
-  padding: 2rem 3.5rem;
+  width: 100%;
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 2rem 2.25rem;
+  padding-left: max(2.25rem, env(safe-area-inset-left, 0px));
+  padding-right: max(2.25rem, env(safe-area-inset-right, 0px));
   background: var(--bg);
   display: flex;
   flex-direction: column;
-  max-width: 1000px;
-  margin: 0 auto;
+  box-sizing: border-box;
 }
 
 /* ---------- Header / top bar ---------- */
@@ -122,7 +126,7 @@
   justify-content: center;
   gap: 0.5rem 0.75rem;
   align-items: baseline;
-  font-size: 0.85rem;
+  font-size: 1.0rem;
   color: var(--text-secondary);
   margin-top: 1.75rem !important;
 }
@@ -217,7 +221,7 @@
   min-width: 0;
 }
 
-.paper-title {
+.paper-card .paper-title {
   display: block;
   font-weight: 700;
   font-size: 1.1rem;
@@ -226,7 +230,7 @@
   color: var(--link);
 }
 
-.paper-title:hover {
+.paper-card .paper-title:hover {
   color: var(--link-hover);
   text-decoration: underline;
   text-underline-offset: 2px;
@@ -315,6 +319,8 @@
 /* ---------- Blog index ---------- */
 .writings-page {
   padding-top: 2rem;
+  width: 100%;
+  min-width: 0;
 }
 
 .writings-header {
@@ -374,17 +380,23 @@
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  width: 100%;
+  min-width: 0;
 }
 
 .post-card {
   display: grid;
-  grid-template-columns: 200px minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   gap: 1.5rem;
   align-items: start;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
   padding: 1.5rem;
   border: 1px solid var(--border);
   border-radius: 8px;
   transition: box-shadow 0.2s ease;
+  box-sizing: border-box;
 }
 
 .post-card:hover {
@@ -393,8 +405,8 @@
 
 .post-cover {
   display: block;
-  width: 200px;
-  height: 150px;
+  width: 100%;
+  height: 165px;
   border-radius: 6px;
   overflow: hidden;
   border: 1px solid var(--card-border);
@@ -487,9 +499,10 @@
 }
 
 .writing-detail-title {
-  font-family: Georgia, 'Times New Roman', serif;
-  font-size: 2rem;
+  font-family: 'Roboto', system-ui, -apple-system, sans-serif;
+  font-size: 2.25rem;
   font-weight: 700;
+  letter-spacing: -0.015em;
   margin: 0 0 0.5rem;
   line-height: 1.2;
 }
@@ -501,9 +514,9 @@
 }
 
 .writing-detail-content {
-  font-family: Georgia, 'Times New Roman', serif;
-  font-size: 1.05rem;
-  line-height: 1.7;
+  font-family: 'Roboto Slab', Georgia, 'Times New Roman', serif;
+  font-size: 1.0625rem;
+  line-height: 1.75;
   color: var(--writing-body);
   font-weight: 400;
 }
@@ -511,31 +524,35 @@
 .writing-detail-content p,
 .writing-detail-content ul,
 .writing-detail-content ol {
-  margin: 0 0 1.2rem;
+  margin: 0 0 1.25rem;
 }
 
 .writing-detail-content h1,
 .writing-detail-content h2,
 .writing-detail-content h3,
 .writing-detail-content h4 {
-  font-family: Georgia, 'Times New Roman', serif;
+  font-family: 'Roboto', system-ui, -apple-system, sans-serif;
   color: var(--text);
   margin-top: 2.5rem;
   margin-bottom: 0.75rem;
   line-height: 1.25;
-  font-weight: 700;
+  font-weight: 500;
+  letter-spacing: -0.005em;
 }
 
 .writing-detail-content h1 {
-  font-size: 1.7rem;
+  font-size: 1.85rem;
+  font-weight: 700;
 }
 
 .writing-detail-content h2 {
-  font-size: 1.4rem;
+  font-size: 1.5rem;
+  font-weight: 700;
 }
 
 .writing-detail-content h3 {
-  font-size: 1.15rem;
+  font-size: 1.2rem;
+  font-weight: 500;
 }
 
 .writing-detail-content a {
@@ -633,9 +650,17 @@
 }
 
 /* ---------- Responsive ---------- */
+@media (min-width: 640px) {
+  .post-card {
+    grid-template-columns: minmax(180px, 30%) minmax(0, 1fr);
+  }
+}
+
 @media (max-width: 768px) {
   .app-shell {
-    padding: 1.25rem 1rem;
+    padding: 1rem 0.875rem;
+    padding-left: max(0.875rem, env(safe-area-inset-left, 0px));
+    padding-right: max(0.875rem, env(safe-area-inset-right, 0px));
   }
 
   .top-bar {
@@ -683,17 +708,41 @@
   }
 
   .post-card {
-    grid-template-columns: 1fr;
     gap: 1rem;
-    padding: 1rem;
+    padding: 0.875rem;
   }
 
   .post-cover {
     width: 100%;
-    height: 200px;
+    height: 180px;
+  }
+
+  .post-title {
+    font-size: 1.05rem;
+  }
+
+  .post-excerpt {
+    font-size: 0.9rem;
+    line-height: 1.5;
   }
 
   .writing-detail-title {
     font-size: 1.6rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .app-shell {
+    padding: 0.75rem;
+    padding-left: max(0.75rem, env(safe-area-inset-left, 0px));
+    padding-right: max(0.75rem, env(safe-area-inset-right, 0px));
+  }
+
+  .page-title {
+    font-size: 1.5rem;
+  }
+
+  .post-cover {
+    height: 160px;
   }
 }

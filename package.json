@@ -17,7 +17,13 @@
     "vite": "^5.4.21"
   },
   "dependencies": {
+    "@fontsource/crimson-pro": "^5.2.8",
+    "@fontsource/inter": "^5.2.8",
+    "@fontsource/libertinus-sans": "^5.2.2",
+    "@fontsource/libertinus-serif": "^5.2.1",
     "@mdx-js/react": "^3.1.1",
+    "academicons": "^1.9.5",
+    "bootstrap-icons": "^1.13.1",
     "katex": "^0.16.47",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",

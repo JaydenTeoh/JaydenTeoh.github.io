@@ -1,0 +1,292 @@
+import './2026-05-25-nextlat/recipe-tokens.css'
+import {
+  recipeGpt2Tokens,
+  multiTokenPredictionRefs,
+  multiTokenPredictionModels,
+  transformerShortcutRefs,
+  benchmarkSlides,
+} from './2026-05-25-nextlat/nextlat.js'
+
+<PaperHero
+  title="Next-Latent Prediction Transformers Learn Compact World Models"
+  authors={[
+    { name: 'Jayden Teoh' },
+    { name: 'Manan Tomar' },
+    { name: 'Kwangjun Ahn' },
+    { name: 'Edward S. Hu' },
+    { name: 'Tim Pearce' },
+    { name: 'Pratyusha Sharma' },
+    { name: 'Akshay Krishnamurthy' },
+    { name: 'Riashat Islam' },
+    { name: 'Alex Lamb' },
+    { name: 'John Langford' },
+  ]}
+  affiliation={<><svg viewBox="0 0 23 23" width="0.95em" height="0.95em" aria-hidden="true" style={{ marginRight: '0.45em', verticalAlign: '-0.1em' }}><rect x="1" y="1" width="10" height="10" fill="#F25022" /><rect x="12" y="1" width="10" height="10" fill="#7FBA00" /><rect x="1" y="12" width="10" height="10" fill="#00A4EF" /><rect x="12" y="12" width="10" height="10" fill="#FFB900" /></svg>Microsoft Research</>}
+  venue="Preprint, 2025"
+  links={[
+    { label: 'arXiv', href: 'https://arxiv.org/abs/2511.05963', icon: 'ai ai-arxiv' },
+    { label: 'Code', href: 'https://github.com/JaydenTeoh/NextLat', icon: 'bi bi-github' },
+  ]}
+/>
+
+<TLDR>
+  We introduce <strong>Next-Latent Prediction (NextLat)</strong>, a simple auxiliary objective
+  that augments next-token training with self-supervised predictions in the latent space.
+  NextLat has three main benefits:
+   1. **Representation Learning**: it encourages transformers to form compact belief states for reasoning and planning.
+   2. **Better Data Efficiency**: predicting in latent space provides denser learning signal than predicting one-hot tokens.
+   3. **Faster Inference**: It enables variable-length self-speculative decoding, allowing up to 3.3× faster inference.
+</TLDR>
+<Figure
+  src="/blog/assets/2026-05-25-nextlat/nextlat_viz.gif"
+  caption="Transformers are trained to predict the next token. What if transformers also learn to predict their own next hidden state?"
+  width="100%"
+/>
+
+{/* <Abstract>
+  Transformers replace recurrence with a memory that grows with sequence length and
+  self-attention that enables ad-hoc lookups over past tokens. Consequently, they lack an
+  inherent incentive to compress history into compact latent states with consistent transition
+  rules, and often learn solutions that generalize poorly. We introduce Next-Latent Prediction
+  (NextLat), which extends standard next-token training with self-supervised predictions in the
+  latent space. Specifically, NextLat trains a transformer to learn latent representations that
+  are predictive of the next latent state given the next token. Theoretically, we show that
+  these latents provably converge towards belief states — compressed information about the
+  history necessary to predict the future. This simple auxiliary objective injects a recurrent
+  inductive bias into transformers while leaving their architecture, parallel training
+  efficiency, and inference unchanged. NextLat effectively encourages transformers to form
+  compact world models with coherent, recurrent-like latent dynamics, improving downstream
+  performance across world modeling, reasoning, planning, and language modeling.
+</Abstract> */}
+
+<TOC
+  items={[
+    { slug: 'intro', text: 'Introduction' },
+    { slug: 'method', text: 'Method' },
+    { slug: 'motivation', text: 'Motivation' },
+    { slug: 'bitter-lesson', text: 'The Bitter Lesson' },
+    { slug: 'experiments', text: 'Experiments' },
+    { slug: 'speculative-decoding', text: 'Speculative Decoding' },
+    { slug: 'conclusion', text: 'Conclusion' },
+  ]}
+/>
+
+<Section id="intro">
+# Introduction
+
+In this blog, I question two dominant components of sequence modeling today:
+1. **The transformer architecture**
+2. **Next-token prediction**
+
+I then show how Next-Latent Prediction (NextLat) can address issues with each of these components.
+
+</Section>
+
+<Section id="method">
+# Method 
+## next-latent prediction
+
+I'll describe our method in a high-level manner to set up the context for the subsequent sections. **NextLat** extends standard next-token training with a self-supervised auxiliary objective in
+the latent space. Specifically, we teach the transformer to encode tokens $X_{1:t}$ into latent representations/hidden states $\mathbf{h}_t$ such that it can:
+
+1. predict the *next token* $X_{t+1}$,
+2. predict *its own next hidden state* $\mathbf{h}_{t+1}$ given the next token $X_{t+1}$.
+
+Our training objective combines standard next-token cross-entropy with a latent-prediction regression loss<Footnote>There are other components to the loss, but they are not immediately relevant — see the paper for the full objective.</Footnote>:
+<Takeaway label="Next-latent prediction objective">
+$$
+\mathcal{L}_{\text{next-h}} = \lVert \hat{\mathbf{h}}_{t+1} - \mathrm{sg}[\mathbf{h}_{t+1}] \rVert_2^2
+$$
+</Takeaway>
+
+where $\hat{\mathbf{h}}_{t+1}$ is the predicted next hidden state, and $\mathrm{sg}$ is the stop-gradient operator.
+
+Importantly, this objective retains the transformer's parallel training efficiency. At inference, the transformer decodes autoregressively as usual — there is no architectural change.
+{/* \mathcal{L}_{\mathrm{KL}} = D_\mathrm{KL} \left( p_\theta^\mathrm{sg}(\cdot \mid \mathrm{sg}[\mathbf{h}_{t+1}]) \;\|\; p_\theta^\mathrm{sg}(\cdot \mid \mathrm{sg}[\hat{\mathbf{h}}_{t+1}])\right) */}
+</Section>
+
+<Section id="motivation">
+# Motivation
+## the issue with transformers
+
+Transformers replaced recurrence with a memory that grows with sequence length and self-attention that enables ad-hoc lookups over past tokens. Consequently, they lack an 
+inherent incentive to compress history into compact latent summaries, and often learn solutions that generalize poorly<Cite refs={transformerShortcutRefs} />.
+
+### > how does NextLat fix this?
+
+NextLat forces each latent state to store all information about the history necessary to predict the next hidden state. 
+<Takeaway label="NextLat learns belief states">
+NextLat ensures existence of a mapping from current latent state to the next latent state to the next next latent state... and so on.
+$$
+\begin{aligned}
+\mathbf{h}_t
+&\xrightarrow[\text{decode token}]{p_\theta} X_{t+1}
+\xrightarrow[\text{update state}]{p_\psi} \mathbf{h}_{t+1}
+\xrightarrow[\text{decode token}]{p_\theta} X_{t+2}
+\xrightarrow[\text{update state}]{p_\psi} \mathbf{h}_{t+2}
+\;\cdots\;
+\xrightarrow{p_\theta} X_T
+\end{aligned}
+$$
+For these maps to exist, and be learned, $\mathbf{h}_t$ must optimize toward a *belief state*—a compressed summary of the history necessary to predict the future. 
+</Takeaway>
+Intuitively, this teaches the model to form a compact latent summary at every step. This prevents it from learning
+shortcut shortcuts that depend on lazy self-attention lookups over past tokens!
+
+## the issue with next-token prediction
+
+Firstly, next-token prediction *does not* have an inherent incentive to learn belief states (see <Cite
+  id="hu2025belief"
+  href="https://arxiv.org/abs/2410.23506"
+  authors="Hu et al."
+  year={2025}
+  title="The Belief State Transformer"
+  venue="ICLR 2025"
+/>). 
+
+Secondly, next-token prediction is inherently *myopic*. It is biased towards learning short-term dependencies in the data.
+For example, on *Path-Star* <Cite
+  id="bachmann24a"
+  href="https://proceedings.mlr.press/v235/bachmann24a.html"
+  authors="Bachmann et al."
+  year={2024}
+  title="The Pitfalls of Next-Token Prediction"
+  venue="ICML 2024"
+/>, a simple lookahead planning task, next-token predictors are unable to solve it .
+
+### > how does NextLat fix this?
+By teaching the model to compress history into belief states, NextLat effectively encourages the model to 
+focus on learning the underlying latent dynamics of the data, rather than relying on surface-level token patterns. This allows it to learn more coherent, recurrent-like latent dynamics that can capture long-term dependencies.
+
+Later in the "Experiments" section, we show that NextLat is the only method capable of solving Path-Star!
+
+</Section>
+
+
+<Section id="bitter-lesson">
+# What about "The Bitter Lesson"?
+
+New methods of learning like NextLat can often repulse religious adherents to [The Bitter Lesson](http://www.incompleteideas.net/IncIdeas/BitterLesson.html). At first glance, adding
+yet another auxiliary objective to the well-established next-token prediction objective may seem like another attempt to inject human inductive bias, and another departure from the simple 
+recipe of *"scale the model, scale the data, scale the compute"*.
+<Figure
+  src="/blog/assets/2026-05-25-nextlat/bitter_lesson.png"
+  caption="Richard Sutton's yearly reminder on The Bitter Lesson."
+  width="80%"
+/>
+But NextLat is not in contention with The Bitter Lesson. In fact, I would argue that it is a direct application of the lesson from two viewpoints:
+1. **NextLat brings us closer toward *self-supervised learning* rather than human supervised learning.**
+2. **NextLat improves *data efficiency* by extracting more learning signal from each training sequence**
+
+## 1. self-supervised learning
+
+Self-supervised learning (SSL) is the ultimate realization of "The Bitter Lesson". Rather than relying on human-provided labels, SSL methods learn to generates its own learning signals from the structure of raw unlabeled inputs.
+
+Next-token prediction is useful for bootstrapping the model with a core basis of human knowledge by leveraging the vast amount of human-written text on the internet. But then the model remains bounded by the way humans articulate and represent information. 
+Human language and web text are riddled with useless syntax and inconsistencies. Here is an example:
+
+<figure className="nextlat-recipe-tokens">
+  <div
+    className="nextlat-recipe-tokens__block"
+    role="img"
+    aria-label="Tokenized by the GPT-2 tokenizer."
+  >
+    {recipeGpt2Tokens.map((text, i) => (
+      <span key={i} className="nextlat-recipe-tokens__token" data-color={i % 5}>
+        {text}
+      </span>
+    ))}
+  </div>
+  <figcaption>Human-written text tokenized by the GPT-2 tokenizer.</figcaption>
+</figure>
+
+Next-token prediction has to work double time to model misspellings like "untill" (which gets tokenized differently from "until") and abbreviations like "tbsp". However, the underlying latent transition in semantics is clean: **mix ingredients → dissolve sugar → refrigerate**.
+
+So the Bitter Lesson-pilled argument for NextLat is simple: if raw sequences contain more learnable structure than next-token prediction alone extracts, then NextLat helps direct more learning capacity towards the underlying latent transition (i.e., predicting in latent space), rather than focusing on superfluous syntax.
+
+
+## 2. data efficiency and richer gradient signals
+
+At the current rate, we will run out of web-text data for training models by 2028<Cite
+  id="villalobos2024data"
+  href="https://arxiv.org/abs/2211.04325"
+  authors="Villalobos et al."
+  year={2024}
+  title="Will we run out of data? Limits of LLM scaling based on human-generated data"
+  venue="arXiv:2211.04325"
+/>. There is a growing need for methods that can extract richer gradient signals from datasets, allowing efficient learning from less data.
+
+Prior methods propose to extract richer gradient signals by predicting more tokens every step<Cite refs={multiTokenPredictionRefs} />.
+However, these methods predict in token space, so the learning signal is sparse and only anchored to the next multiple tokens. 
+In contrast, NextLat predicts in the latent space. This difference sets apart the richness of the learning signal it provides. 
+
+Firstly, NextLat is trained to predict the next hidden state $\mathbf{h}_{t+1}$, which itself parameterizes the *entire distribution* over the next-next token $X_{t+2}$. 
+This shifts supervision from individual token targets to distribution-level alignment. 
+Secondly, $\mathbf{h}_{t+1}$ is also trained to predict the next-next hidden state $\mathbf{h}_{t+2}$. This recursive latent dynamics, where every latent is predictive of the next, means that 
+<Takeaway label="Recursive information propagation">
+$\mathbf{h}_{t}$ predicts $\mathbf{h}_{t+1}$ which predicts $\mathbf{h}_{t+2}$ which predicts $\mathbf{h}_{t+3}$ which predicts...
+
+Therefore, $\mathbf{h}_{t+1}$ encodes information about $\mathbf{h}_{t+2}$, $\mathbf{h}_{t+3}$, $\mathbf{h}_{t+4}$, $\dots$
+</Takeaway>
+As a result, next-latent supervision not only provides learning signals that are dense in the vocabulary distribution, but also provides information about all future tokens. 
+
+</Section>
+
+
+
+<Section id="experiments">
+# Experiments
+
+We show that NextLat improves over next-token prediction, multi-token prediction, and other token-prediction baselines across benchmarks
+in world modeling, reasoning, planning, and language modeling.
+
+<BenchmarkSlider slides={benchmarkSlides} />
+
+</Section>
+
+<Section id="speculative-decoding">
+# Variable-length self-speculative decoding
+
+Once the model has learned to predict its own next latent state, we get a free
+inference-time bonus: the lightweight latent dynamics model (i.e., the next-latent prediction head) can be *recursively* rolled out to predict future
+tokens entirely in latent space, without invoking the main transformer. This enables *variable-length self-speculative decoding*.
+
+<Figure
+  src="/blog/assets/2026-05-25-nextlat/spec_decoding_cover.png"
+  caption="Self-speculative decoding with NextLat enables longer drafts and faster inference."
+  width="50%"
+/>
+In our experiments, NextLat trained with only next-latent prediction ($d=1$) can still draft
+long token sequences up to 10 tokens long, achieving up to **3.3× faster inference**
+on language modeling benchmarks.
+
+<Figure
+  src="/blog/assets/2026-05-25-nextlat/combined_spec_decoding.gif"
+  caption="NextLat enables variable-length self-speculative decoding."
+  width="80%"
+/>
+
+Multi-token prediction (MTP) has become the standard for open-source language model pretraining<Cite refs={multiTokenPredictionModels} />. 
+However, MTP is typically limited to the fixed speculative horizon it was trained on. Unlike MTP, NextLat allows for longer flexible-length drafts.
+This means that NextLat can achieve much faster inference than MTP!
+
+</Section>
+
+<Section id="conclusion">
+## Conclusion
+
+NextLat is a simple modification to the training objective, but it has surprisingly far-reaching benefits for representation learning, data efficiency, and inference speed.
+We hope that our work will inspire future pretraining research.
+</Section>
+
+<BibTeX note="If you find this work useful, please cite:">{`@misc{teoh2026nextlatentpredictiontransformerslearn,
+  title    = {Next-Latent Prediction Transformers Learn Compact World Models},
+  author   = {Jayden Teoh and Manan Tomar and Kwangjun Ahn and Edward S. Hu and
+              Tim Pearce and Pratyusha Sharma and Akshay Krishnamurthy and
+              Riashat Islam and Alex Lamb and John Langford},
+  year     = {2026},
+  eprint   = {2511.05963},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.LG},
+  url      = {https://arxiv.org/abs/2511.05963},
+}`}</BibTeX>
