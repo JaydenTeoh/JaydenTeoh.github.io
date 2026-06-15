@@ -22,7 +22,7 @@ export const papers = [
     links: [
       { label: 'code', href: 'https://github.com/JaydenTeoh/NextLat' },
       { label: 'arXiv', href: 'https://arxiv.org/abs/2511.05963' },
-      { label: 'blog post', href: 'https://jaydenteoh.github.io/2026/nextlat' },
+      { label: 'blog post', href: 'https://jaydenteoh.github.io/blog/2026/nextlat' },
     ],
     blurb:
       'We introduce Next-Latent Prediction (NextLat), which extends standard next-token training with self-supervised predictions in the latent space.',

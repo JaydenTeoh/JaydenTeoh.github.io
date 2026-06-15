@@ -10,7 +10,7 @@ export default function App() {
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/blog" element={<Blog />} />
-      <Route path="/:year/:slug" element={<PostPage />} />
+      <Route path="/blog/:year/:slug" element={<PostPage />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   )

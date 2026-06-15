@@ -26,7 +26,7 @@ export function postYear(post) {
 }
 
 export function postUrl(post) {
-  return `/${postYear(post)}/${post.slug}`
+  return `/blog/${postYear(post)}/${post.slug}`
 }
 
 export function getPost(year, slug) {
