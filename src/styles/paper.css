@@ -20,7 +20,9 @@
   width: 100%;
   max-width: 100%;
   min-width: 0;
-  overflow-x: clip;
+  /* No overflow-x clip here: it would crop citation/footnote tooltips that
+     extend into the page margins. Page-wide horizontal scroll is already
+     prevented by `body { overflow-x: clip }` in index.css. */
   padding-bottom: 5rem;
   box-sizing: border-box;
 }
@@ -117,6 +119,11 @@
   font-size: 1.5rem;
   margin: 1.75rem 0 0;
   line-height: 1.5;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  column-gap: 1.75em;
+  row-gap: 0.25em;
 }
 
 .paper-page .paper-authors-line sup {
@@ -127,7 +134,7 @@
 .paper-page .paper-affiliations {
   font-size: 1.5rem;
   color: #6b7280;
-  margin: 0.5rem 0 0;
+  margin: 1.25rem 0 0;
   line-height: 1.5;
 }
 
@@ -924,8 +931,8 @@
 }
 
 .paper-page .paper-cite:hover .paper-cite-tooltip,
-.paper-page .paper-cite-link:focus-visible + .paper-cite-tooltip,
-.paper-page .paper-cite-group:focus-within .paper-cite-tooltip {
+.paper-page .paper-cite.is-open .paper-cite-tooltip,
+.paper-page .paper-cite-link:focus-visible + .paper-cite-tooltip {
   opacity: 1;
   transform: translate(-50%, 0);
   pointer-events: auto;
@@ -1191,5 +1198,43 @@
 
   .paper-page .paper-tldr p {
     font-size: 0.85rem;
+  }
+}
+
+/* ============================================================
+   Citation / footnote popups become a centered modal on mobile
+   (a tooltip anchored to the marker gets clipped at screen edges).
+   The full-screen dim backdrop is drawn with a large box-shadow
+   spread so no extra DOM element is needed.
+   ============================================================ */
+@media (max-width: 768px) {
+  .paper-page .paper-cite-tooltip,
+  .paper-page .paper-footnote-tooltip {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    bottom: auto;
+    transform: translate(-50%, -46%);
+    width: max-content;
+    max-width: 90vw;
+    max-height: 75vh;
+    overflow-y: auto;
+    box-shadow: 0 12px 40px rgba(15, 23, 42, 0.45),
+      0 0 0 100vmax rgba(15, 23, 42, 0.5);
+  }
+
+  /* The little pointer arrow makes no sense for a centered modal. */
+  .paper-page .paper-cite-tooltip::after,
+  .paper-page .paper-footnote-tooltip::after {
+    display: none;
+  }
+
+  .paper-page .paper-cite:hover .paper-cite-tooltip,
+  .paper-page .paper-cite.is-open .paper-cite-tooltip,
+  .paper-page .paper-cite-link:focus-visible + .paper-cite-tooltip,
+  .paper-page .paper-footnote:hover .paper-footnote-tooltip,
+  .paper-page .paper-footnote.is-open .paper-footnote-tooltip,
+  .paper-page .paper-footnote-marker:focus-visible + .paper-footnote-tooltip {
+    transform: translate(-50%, -50%);
   }
 }

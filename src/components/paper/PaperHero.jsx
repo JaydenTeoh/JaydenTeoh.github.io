@@ -33,7 +33,6 @@ export default function PaperHero({
                 )}
                 {supNum ? <sup>{supNum}</sup> : null}
                 {a.equal ? <sup>*</sup> : null}
-                {i < authors.length - 1 ? ', ' : ''}
               </span>
             )
           })}

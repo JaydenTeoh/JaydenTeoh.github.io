@@ -311,6 +311,7 @@ function numsEqual(a, b) {
 }
 
 function CiteTooltipBody({ authors, year, title, venue, href }) {
+  const hasMeta = Boolean(authors || year != null || title || venue)
   const body = (
     <>
       {authors || year != null ? (
@@ -321,6 +322,8 @@ function CiteTooltipBody({ authors, year, title, venue, href }) {
       ) : null}
       {title ? <span className="paper-cite-title">{title}</span> : null}
       {venue ? <span className="paper-cite-venue">{venue}</span> : null}
+      {/* No metadata to show → surface the URL itself so the popup is useful. */}
+      {!hasMeta && href ? <span className="paper-cite-venue">{href}</span> : null}
     </>
   )
 
@@ -342,6 +345,7 @@ function CiteGroup({ refs }) {
   )
   const keysKey = keys.join('\0')
   const [nums, setNums] = useState(() => refs.map(() => 0))
+  const [open, setOpen] = useState(false)
 
   useIsoLayoutEffect(() => {
     const root = groupRef.current?.closest('.paper-page') || document
@@ -353,7 +357,7 @@ function CiteGroup({ refs }) {
   const label = nums.filter((n) => n > 0).join(', ')
 
   return (
-    <span className="paper-cite paper-cite-group" ref={groupRef}>
+    <span className={`paper-cite paper-cite-group${open ? ' is-open' : ''}`} ref={groupRef}>
       {keys.map((k) => (
         <span key={k} data-cite-key={k} className="paper-cite-register" aria-hidden="true" />
       ))}
@@ -361,7 +365,15 @@ function CiteGroup({ refs }) {
         type="button"
         className="paper-cite-link"
         aria-describedby={tipId}
+        aria-expanded={open}
         aria-label={`References ${label}`}
+        onClick={() => setOpen((o) => !o)}
+        onBlur={(e) => {
+          const next = e.relatedTarget
+          if (!next || !e.currentTarget.parentNode.contains(next)) {
+            setOpen(false)
+          }
+        }}
       >
         [{label || ''}]
       </button>
@@ -386,11 +398,11 @@ export function Cite({ id, href, authors, year, title, venue, refs }) {
 
   const reactId = useId()
   const tipId = `paper-cite-${reactId.replace(/:/g, '_')}`
-  const hasTip = Boolean(title || venue || authors)
   const key = citeKey({ id, href, authors, title }, reactId)
 
   const linkRef = useRef(null)
   const [num, setNum] = useState(0)
+  const [open, setOpen] = useState(false)
 
   useIsoLayoutEffect(() => {
     const el = linkRef.current
@@ -400,24 +412,29 @@ export function Cite({ id, href, authors, year, title, venue, refs }) {
     if (assigned) setNum((prev) => (prev === assigned ? prev : assigned))
   }, [key])
 
+  // The marker is always a toggle (never a link), so it never navigates on
+  // click/tap. The source link lives inside the popup via CiteTooltipBody.
   return (
-    <span className="paper-cite">
-      <a
-        ref={linkRef}
-        href={href}
-        data-cite-key={key}
+    <span className={`paper-cite${open ? ' is-open' : ''}`}>
+      <span ref={linkRef} data-cite-key={key} aria-hidden="true" hidden />
+      <button
+        type="button"
         className="paper-cite-link"
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-describedby={hasTip ? tipId : undefined}
+        aria-describedby={tipId}
+        aria-expanded={open}
+        onClick={() => setOpen((o) => !o)}
+        onBlur={(e) => {
+          const next = e.relatedTarget
+          if (!next || !e.currentTarget.parentNode.contains(next)) {
+            setOpen(false)
+          }
+        }}
       >
         [{num || ''}]
-      </a>
-      {hasTip ? (
-        <span id={tipId} role="tooltip" className="paper-cite-tooltip">
-          <CiteTooltipBody authors={authors} year={year} title={title} venue={venue} />
-        </span>
-      ) : null}
+      </button>
+      <span id={tipId} role="tooltip" className="paper-cite-tooltip">
+        <CiteTooltipBody authors={authors} year={year} title={title} venue={venue} href={href} />
+      </span>
     </span>
   )
 }

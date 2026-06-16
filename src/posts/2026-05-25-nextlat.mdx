@@ -35,7 +35,7 @@ import {
   NextLat has three main benefits:
    1. **Representation Learning**: it encourages transformers to form compact belief states for reasoning and planning.
    2. **Better Data Efficiency**: predicting in latent space provides denser learning signal than predicting one-hot tokens.
-   3. **Faster Inference**: It enables variable-length self-speculative decoding, allowing up to 3.3× faster inference.
+   3. **Faster Inference**: it enables variable-length self-speculative decoding, allowing up to 3.3× faster inference.
 </TLDR>
 <Figure
   src="/blog/assets/2026-05-25-nextlat/nextlat_viz.gif"
@@ -223,10 +223,12 @@ In contrast, NextLat predicts in the latent space. This difference sets apart th
 Firstly, NextLat is trained to predict the next hidden state $\mathbf{h}_{t+1}$, which itself parameterizes the *entire distribution* over the next-next token $X_{t+2}$. 
 This shifts supervision from individual token targets to distribution-level alignment. 
 Secondly, $\mathbf{h}_{t+1}$ is also trained to predict the next-next hidden state $\mathbf{h}_{t+2}$. This recursive latent dynamics, where every latent is predictive of the next, means that 
-<Takeaway label="Recursive information propagation">
+<Takeaway label="NextLat provides denser gradient signals">
 $\mathbf{h}_{t}$ predicts $\mathbf{h}_{t+1}$ which predicts $\mathbf{h}_{t+2}$ which predicts $\mathbf{h}_{t+3}$ which predicts...
 
 Therefore, $\mathbf{h}_{t+1}$ encodes information about $\mathbf{h}_{t+2}$, $\mathbf{h}_{t+3}$, $\mathbf{h}_{t+4}$, $\dots$
+
+Predicting $\mathbf{h}_{t+1}$ therefore provides learning signal about the future, not just the immediate next token.
 </Takeaway>
 As a result, next-latent supervision not only provides learning signals that are dense in the vocabulary distribution, but also provides information about all future tokens. 
 
