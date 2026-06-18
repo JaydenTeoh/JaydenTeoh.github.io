@@ -64,6 +64,7 @@ export default function PaperHero({
           {links.map((l) => (
             <a key={l.href} className="paper-link" href={l.href} target="_blank" rel="noreferrer">
               {l.icon ? <i className={l.icon} /> : null}
+              {l.emoji ? <span aria-hidden="true">{l.emoji}</span> : null}
               {l.label}
             </a>
           ))}
