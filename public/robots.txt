@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://jaydenteoh.github.io/sitemap.xml

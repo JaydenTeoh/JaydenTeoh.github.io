@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import Header from '../components/Header.jsx'
+import SEO from '../components/SEO.jsx'
 import PostCard from '../components/PostCard.jsx'
 import { posts, getAllTags } from '../data/posts.js'
 
@@ -11,6 +12,11 @@ export default function Blog() {
 
   return (
     <div className="app-shell">
+      <SEO
+        title="Blog"
+        description="Jayden Teoh's blog about machine learning, research, and writing."
+        path="/blog"
+      />
       <Header />
 
       <main className="writings-page">

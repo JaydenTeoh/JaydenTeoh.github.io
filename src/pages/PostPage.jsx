@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import Header from '../components/Header.jsx'
+import SEO from '../components/SEO.jsx'
 import PostMeta from '../components/PostMeta.jsx'
 import PaperPostPage from './PaperPostPage.jsx'
 import { getPost } from '../data/posts.js'
@@ -47,6 +48,12 @@ export default function PostPage() {
 
   return (
     <div className="app-shell">
+      <SEO
+        title={post.title}
+        description={post.excerpt || `Read ${post.title} by Jayden Teoh.`}
+        path={`/blog/${year}/${slug}`}
+        image={post.cover}
+      />
       <Header />
 
       <main className="writing-detail-wrapper">

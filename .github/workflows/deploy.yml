@@ -30,11 +30,10 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # Builds, then pre-renders a real HTML file per route (200 status + baked
+      # meta tags) and the 404.html SPA fallback. See scripts/prerender.mjs.
       - name: Build
         run: npm run build
-
-      - name: SPA 404 fallback
-        run: cp dist/index.html dist/404.html
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

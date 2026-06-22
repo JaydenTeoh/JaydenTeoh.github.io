@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { MDXProvider } from '@mdx-js/react'
 import Header from '../components/Header.jsx'
+import SEO from '../components/SEO.jsx'
 import PaperHero from '../components/paper/PaperHero.jsx'
 import {
   TLDR,
@@ -77,6 +78,12 @@ export default function PaperPostPage() {
 
   return (
     <div className="app-shell">
+      <SEO
+        title={post.title}
+        description={post.excerpt || `Read ${post.title} by Jayden Teoh.`}
+        path={`/blog/${year}/${slug}`}
+        image={post.cover}
+      />
       <Header />
 
       <main className="paper-page paper-page--sidebar">
