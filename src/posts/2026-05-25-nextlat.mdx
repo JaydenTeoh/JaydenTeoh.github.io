@@ -219,7 +219,7 @@ At the current rate, we will run out of web-text data for training models by 202
 />. There is a growing need for methods that can extract richer gradient signals from datasets, allowing efficient learning from less data.
 
 Prior methods propose to extract richer gradient signals by predicting more tokens every step<Cite refs={multiTokenPredictionRefs} />.
-However, these methods predict in token space, so the learning signal is sparse and only anchored to the next multiple tokens. 
+However, these methods predict in token space, so the learning signal is sparse and only tied to the next one-hot token, or multiple tokens. 
 In contrast, NextLat predicts in the latent space. This difference sets apart the richness of the learning signal it provides. 
 
 Firstly, NextLat is trained to predict the next hidden state $\mathbf{h}_{t+1}$, which itself parameterizes the *entire distribution* over the next-next token $X_{t+2}$. 
