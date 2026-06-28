@@ -82,7 +82,7 @@ export default function PaperPostPage() {
         title={post.title}
         description={post.excerpt || `Read ${post.title} by Jayden Teoh.`}
         path={`/blog/${year}/${slug}`}
-        image={post.cover}
+        image={post.socialImage || post.cover}
       />
       <Header />
 
