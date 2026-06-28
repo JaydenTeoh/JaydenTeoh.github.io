@@ -52,7 +52,7 @@ const routes = [
     path: `/blog/${postYear(post)}/${post.slug}`,
     title: post.title,
     description: post.excerpt || `Read ${post.title} by Jayden Teoh.`,
-    image: post.cover || defaultOgImage,
+    image: post.socialImage || post.cover || defaultOgImage,
     type: 'article',
     date: post.date,
     tags: post.tags,
