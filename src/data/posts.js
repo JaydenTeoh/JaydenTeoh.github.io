@@ -6,7 +6,7 @@ export const posts = [
     tags: ['machine learning', 'research', 'my publications'],
     excerpt:
       'NextLat extends standard next-token prediction training with self-supervised predictions in the latent space.',
-    cover: '/blog/assets/2026-05-25-nextlat/manhattan_population_webby.gif',
+    cover: '/blog/assets/2026-05-25-nextlat/manhattan_population_webby-final-frame.png',
     socialImage: '/blog/assets/2026-05-25-nextlat/manhattan_population_webby-final-frame.png',
     layout: 'paper',
     load: () => import('../posts/2026-05-25-nextlat.mdx'),
