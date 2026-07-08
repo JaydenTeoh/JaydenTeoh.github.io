@@ -167,12 +167,17 @@ the Turing machine. However, recurrent neural networks (RNNs) are not paralleliz
 
 ### > NextLat introduces a recurrent inductive bias without recurrence
 NextLat introduces a *recurrent inductive bias* in transformers without the sequential training bottleneck. By teaching the model to compress history into belief state at every time step, 
-NextLat effectively encourages the model to learn the underlying latent dynamics of the data, rather than exploit surface-level token patterns. This allows it to learn more coherent, recurrent-like latent dynamics that can capture long-term dependencies.
+NextLat effectively encourages the model to learn the underlying recurrent latent dynamics of the data, rather than exploit surface-level token patterns. 
 
-In fact, NextLat can be viewed as a method for training RNNs without recurrence. The transformer forecasts latent states across the sequence in parallel, while the latent dynamics model (the RNN) is
-trained using only one-step latent predictions (i.e.,  $$\mathcal{L}_{\text{next-h}}$$).
-
-We will demonstrate this interesting connection in the "Experiments" section, where NextLat solves state-tracking tasks that are inexpressible for transformers, but solvable by RNNs.
+In fact, *NextLat can be viewed as a method for training RNNs without recurrence* (see <Cite
+  id="kumar2026pretrainingrecurrentnetworksrecurrence"
+  href="https://arxiv.org/abs/2410.23506"
+  authors="Akarsh Kumar and Phillip Isola"
+  year={2026}
+  title="Pretraining Recurrent Networks without Recurrence"
+  venue="arXiv 2026"
+/>). The transformer forecasts latent states across the sequence in parallel, while the latent dynamics model (the RNN) is
+trained using only one-step latent predictions (i.e.,  $$\mathcal{L}_{\text{next-h}}$$). We demonstrate this interesting connection in the "Experiments" section, where NextLat solves state-tracking tasks that are inexpressible for transformers, but solvable by RNNs.
 
 </Section>
 
