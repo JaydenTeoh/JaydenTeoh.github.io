@@ -156,7 +156,8 @@ For example, on *Path-Star* <Cite
 />, a simple lookahead planning task, next-token predictors are unable to solve it .
 
 ### > how does NextLat fix this?
-Compression and lookahead planning are two sides of the same coin. To compress history into compact belief states, NextLat must anticipate which information from the past will matter downstream.
+Compression and planning are two sides of the same coin. To compress history into compact belief states, NextLat must anticipate which information from the past will matter downstream. 
+Therefore, NextLat teaches the model to capture long-term dependencies and perform lookahead planning.
 
 Later in the "Experiments" section, we show that NextLat is the only method capable of solving Path-Star!
 
