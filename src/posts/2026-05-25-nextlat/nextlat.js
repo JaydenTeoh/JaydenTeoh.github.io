@@ -52,10 +52,17 @@ export const benchmarkSlides = [
   },
   {
     id: 'language-modeling',
-    label: 'Language modeling',
-    title: 'Language modeling',
+    label: 'Language Modeling',
+    title: 'Language Modeling',
     description: "NextLat's representations are more predictive of future tokens—up to 20 tokens ahead! NextLat also achieves the best downstream accuracy and lower perplexity than multi-token prediction methods in language modeling benchmarks.",
     src: '/blog/assets/2026-05-25-nextlat/nextlat_lm_results.png',
+  },
+  {
+    id: 'state-tracking',
+    label: 'State Tracking',
+    title: 'State Tracking',
+    description: "The A5 word problem is a difficult state-tracking task inexpressible by transformers (see Merrill et al., 2024). Surprisingly, under NextLat training, the co-trained RNN (the latent dynamics models) can generalize far beyond the expressivity limits of the underlying transformer, despite being trained entirely in parallel. We recommend reading Section 5.2 of the paper for a detailed explanation of this phenomenon.",
+    src: '/blog/assets/2026-05-25-nextlat/a5_length_gen.png',
   },
 ]
 

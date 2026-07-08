@@ -157,10 +157,23 @@ For example, on *Path-Star* <Cite
 />, a simple lookahead planning task, next-token predictors are unable to solve it .
 
 ### > how does NextLat fix this?
-By teaching the model to compress history into belief states, NextLat effectively encourages the model to 
-focus on learning the underlying latent dynamics of the data, rather than relying on surface-level token patterns. This allows it to learn more coherent, recurrent-like latent dynamics that can capture long-term dependencies.
+Compression and lookahead planning are two sides of the same coin. To compress history into compact belief states, NextLat must anticipate which information from the past will matter downstream.
 
 Later in the "Experiments" section, we show that NextLat is the only method capable of solving Path-Star!
+
+## connections to recurrent neural networks
+
+Algorithmic reasoning requires capabilities most naturally understood through recurrent models of computation, like
+the Turing machine. However, recurrent neural networks (RNNs) are not parallelizable during training, which has led transformers to become the dominant architecture for sequence modeling.
+
+### > NextLat introduces a recurrent inductive bias without recurrence
+NextLat introduces a *recurrent inductive bias* in transformers without the sequential training bottleneck. By teaching the model to compress history into belief state at every time step, 
+NextLat effectively encourages the model to learn the underlying latent dynamics of the data, rather than exploit surface-level token patterns. This allows it to learn more coherent, recurrent-like latent dynamics that can capture long-term dependencies.
+
+In fact, NextLat can be viewed as a method for training RNNs without recurrence. The transformer forecasts latent states across the sequence in parallel, while the latent dynamics model (the RNN) is
+trained using only one-step latent predictions (i.e.,  $$\mathcal{L}_{\text{next-h}}$$).
+
+We will demonstrate this interesting connection in the "Experiments" section, where NextLat solves state-tracking tasks that are inexpressible for transformers, but solvable by RNNs.
 
 </Section>
 
