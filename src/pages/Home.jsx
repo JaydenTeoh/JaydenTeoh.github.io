@@ -19,18 +19,23 @@ export default function Home() {
               <TypingText text="Jayden Teoh" />
             </h1>
             <p>
-              I am currently a student researcher at{' '}
-              <a href="https://deepmind.google/" target="_blank" rel="noreferrer">
+              I am currently a PhD student student at <a href="https://www.csail.mit.edu/" target="_blank" rel="noreferrer">
+                MIT CSAIL
+              </a> working with <a href="https://web.mit.edu/phillipi/" target="_blank" rel="noreferrer">
+                Phillip Isola
+              </a> and <a href="https://www.vincentsitzmann.com/" target="_blank" rel="noreferrer">
+                Vincent Sitzmann
+              </a>.
+            </p>
+            <p>
+              Previously, I was a student researcher at <a href="https://deepmind.google/" target="_blank" rel="noreferrer">
                 Google DeepMind
               </a>{' '}
               working with{' '}
               <a href="https://vaishnavh.github.io/" target="_blank" rel="noreferrer">
                 Vaishnavh Nagarajan
               </a>
-              . I will be joining MIT CSAIL as a PhD student in Fall 2026.
-            </p>
-            <p>
-              Previously, I had a fun stint at{' '}
+              . Even before, I had a fun stint at{' '}
               <a
                 href="https://www.microsoft.com/en-us/research/lab/microsoft-research-new-york/"
                 target="_blank"

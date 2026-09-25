@@ -17,8 +17,8 @@ export const papers = [
       { name: 'Alex Lamb' },
       { name: 'John Langford' },
     ],
-    venue: 'Microsoft Research Preprint',
-    year: 2025,
+    venue: 'NeurIPS',
+    year: 2026,
     links: [
       { label: 'code', href: 'https://github.com/JaydenTeoh/NextLat' },
       { label: 'arXiv', href: 'https://arxiv.org/abs/2511.05963' },
