@@ -52,7 +52,7 @@ export default function Home() {
             <p>I graduated with a Computer Science degree from Singapore Management University.</p>
 
             <p className="contact-row">
-              <a href="mailto:t3ohjingxiang@gmail.com">email</a>
+              <a href="mailto:jayden_t@mit.edu">email</a>
               <span className="sep">/</span>
               <a href="/data/Jayden_Academic_CV.pdf">cv</a>
               <span className="sep">/</span>
