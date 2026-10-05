@@ -93,7 +93,7 @@ the latent space. Specifically, we teach the transformer to encode tokens $X_{1:
 1. predict the *next token* $X_{t+1}$,
 2. predict *its own next hidden state* $\mathbf{h}_{t+1}$ given the next token $X_{t+1}$.
 
-Our training objective combines standard next-token cross-entropy with a latent-prediction regression loss<Footnote>There are other components to the loss, but they are not immediately relevant — see the paper for the full objective.</Footnote>:
+Our training objective combines standard next-token cross-entropy with a latent-prediction regression loss<Footnote>There is a complementary KL self-distillation component to the loss, but it is not immediately relevant — see the paper for the full objective.</Footnote>:
 <Takeaway label="Next-latent prediction objective">
 $$
 \mathcal{L}_{\text{next-h}} = \lVert \hat{\mathbf{h}}_{t+1} - \mathrm{sg}[\mathbf{h}_{t+1}] \rVert_2^2
@@ -172,7 +172,7 @@ NextLat effectively encourages the model to learn the underlying recurrent laten
 
 In fact, *NextLat can be viewed as a method for training RNNs without recurrence* (see <Cite
   id="kumar2026pretrainingrecurrentnetworksrecurrence"
-  href="https://arxiv.org/abs/2410.23506"
+  href="https://arxiv.org/abs/2606.06479"
   authors="Akarsh Kumar and Phillip Isola"
   year={2026}
   title="Pretraining Recurrent Networks without Recurrence"
