@@ -28,6 +28,22 @@ export const papers = [
       'We introduce Next-Latent Prediction (NextLat), which extends standard next-token training with self-supervised predictions in the latent space.',
   },
   {
+    id: 'soft-mtp',
+    title: 'Multi-Token Prediction Done Right',
+    thumb: '/images/soft_mtp/soft_mtp_overview.png',
+    alt: 'Soft Multi-Token Prediction',
+    paperUrl: 'https://arxiv.org/abs/2610.38331',
+    authors: [{ name: 'Jayden Teoh', me: true }],
+    venue: 'Preprint',
+    year: 2026,
+    links: [
+      { label: 'code', href: 'https://github.com/JaydenTeoh/Soft-MTP' },
+      { label: 'arXiv', href: 'https://arxiv.org/abs/2610.38331' },
+    ],
+    blurb:
+      'We show the standard multi-token prediction gradient hides a KL self-distillation signal behind a noisy residual, and introduce the KL gradient–recovery trick to extract it. This is a free lunch that improves MTP across a range of tasks.',
+  },
+  {
     id: 'infogain',
     title: 'Improving Sampling for Masked Diffusion Models via Information Gain',
     thumb: '/images/infogain/illustrative.png',

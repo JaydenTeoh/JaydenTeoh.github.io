@@ -105,11 +105,7 @@ export default function Home() {
           <h2 className="section-heading">research</h2>
           <p className="section-blurb">
             Jayden's research interests lie in the intersection of representation learning and
-            self-improving agents. Jayden has a track record of publishing papers in top-tier
-            conferences including NeurIPS, ICLR, and ICML.<sup>*</sup>
-          </p>
-          <p className="section-fineprint">
-            *I've been told that writing in third person makes your credentials sound more legitimate :p
+            self-improving agents.
           </p>
 
           <div className="paper-list">
