@@ -4,7 +4,6 @@ import PaperCard from '../components/PaperCard.jsx'
 import TypingText from '../components/TypingText.jsx'
 import { papers } from '../data/papers.js'
 import { siteDescription } from '../data/site.js'
-import { writingLinks, academicService } from '../data/misc.js'
 
 export default function Home() {
   return (
@@ -112,32 +111,6 @@ export default function Home() {
             {papers.map((p) => (
               <PaperCard key={p.id} paper={p} />
             ))}
-          </div>
-        </section>
-
-        <section className="section">
-          <h2 className="section-heading">miscellanea</h2>
-
-          <div className="misc-row">
-            <div className="misc-tag misc-tag-writing">writing</div>
-            <ul className="plain-list misc-links">
-              {writingLinks.map((w) => (
-                <li key={w.href}>
-                  <a href={w.href} target="_blank" rel="noreferrer">
-                    {w.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="misc-row">
-            <div className="misc-tag misc-tag-service">academic service</div>
-            <ul className="plain-list misc-links">
-              {academicService.map((s) => (
-                <li key={s}>{s}</li>
-              ))}
-            </ul>
           </div>
         </section>
       </main>
