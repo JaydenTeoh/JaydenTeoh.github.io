@@ -1,0 +1,207 @@
+import {
+  mtpOriginRefs,
+  mtpAdoptionRefs,
+  fusedCeRefs,
+  straightThroughRefs,
+  klPostTrainingRefs,
+} from './2026-10-27-soft-mtp/soft-mtp.js'
+
+<PaperHero
+  title="The KL Gradient–Recovery Trick"
+  authors={[{ name: 'Jayden Teoh' }]}
+  venue="5 Nov 2026"
+/>
+
+<Section id="intro">
+
+In this post, I'll introduce the *KL gradient–recovery trick*, a method to recover the gradient 
+of a forward KL divergence between two distributions produced by the same linear output head, 
+without materializing logits or computing the KL itself. 
+
+</Section>
+
+<Section id="setting">
+# Setup
+
+Let's say you have a shared linear output head $W$ mapping hidden states, $\mathbf{h}_{T}$ and $\mathbf{h}_{S}$, to 
+different distributions:
+
+$$
+q = \mathrm{softmax}\!\left(W \mathbf{h}_{T}\right), \qquad p = \mathrm{softmax}\!\left(W \mathbf{h}_{S}\right).
+$$
+
+We'll call $q$ the **teacher** and $p$ the **student**. We want the gradient of the forward KL with the teacher
+detached,
+
+$$
+\nabla_{\mathbf{h}_{S}} D_{\mathrm{KL}}\!\left(\mathrm{sg}(q) \,\|\, p\right),
+$$
+
+and we want it without ever materializing $p$ or $q$.
+
+</Section>
+
+<Section id="trick">
+# KL gradient–recovery trick
+
+Let's measure the cross-entropy of each distribution against the
+same arbitrary token $y$, a one-hot target. We can use the fused cross-entropy
+kernels<Cite refs={fusedCeRefs} /> common in modern pre-training,
+which save memory by **never materializing full logits**.
+
+The student's and teacher's cross-entropy gradients with respect to their own hidden states and the KL gradient we want are:
+
+$$
+\nabla_{\mathbf{h}_{S}} \mathrm{CE}(y, p) = W^\top\!\left(p - y\right), \qquad
+\nabla_{\mathbf{h}_{T}} \mathrm{CE}(y, q) = W^\top\!\left(q - y\right),
+$$
+
+$$
+\nabla_{\mathbf{h}_{S}} D_{\mathrm{KL}}\!\left(\mathrm{sg}(q) \,\|\, p\right) = W^\top\!\left(p - q\right).
+$$
+
+Now subtract the teacher's gradient from the student's:
+
+<Takeaway label="KL gradient recovery">
+$$
+\begin{aligned}
+\nabla_{\mathbf{h}_{S}} \mathrm{CE}(y, p) - \nabla_{\mathbf{h}_{T}} \mathrm{CE}(y, q)
+&= W^\top\!\left(p - y\right) - W^\top\!\left(q - y\right) \\[2pt]
+&= W^\top\!\left(p - q\right) \\[2pt]
+&= \nabla_{\mathbf{h}_{S}} D_{\mathrm{KL}}\!\left(\mathrm{sg}(q) \,\|\, p\right).
+\end{aligned}
+$$
+The forward-KL gradient is the **difference of the two cross-entropy
+gradients**; the shared one-hot target cancels. 
+</Takeaway>
+
+## > implementing it
+
+You do not need to touch the two gradients by hand. You can let autograd handle it for you. 
+We'll augment the teacher's hidden state before calculating the softmax:
+
+$$
+\tilde{\mathbf{h}}_{T} = \mathbf{h}_{T} + \underbrace{\big[\mathrm{sg}(\mathbf{h}_{S}) - \mathbf{h}_{S}\big]}_{=0}.
+$$
+
+This resembles the stop-gradient used in straight-through estimators<Cite refs={straightThroughRefs} />. The bracket term is **numerically zero**:
+
+$$
+\mathrm{softmax}\!\left(W \mathbf{h}_{T}\right) = \mathrm{softmax}\!\left(W \tilde{\mathbf{h}}_{T} \right) = q,
+$$
+
+so the teacher's cross-entropy loss and gradient are both untouched. Now, **autograd injects the
+teacher's cross-entropy gradient into the student's hidden state** via the bracket term;
+$\mathbf{h}_{S}$ picks up an additional gradient term
+$\nabla_{\mathbf{h}_{S}} \mathrm{CE}(y, q) = -W^\top(q-y)$, since the bracket has Jacobian $-I$
+with respect to $\mathbf{h}_{S}$.
+
+Sum the gradient terms that the student receives:
+
+$$
+\begin{aligned}
+\nabla_{\mathbf{h}_{S}} \mathrm{CE}(y, p) + \nabla_{\mathbf{h}_{S}} \mathrm{CE}(y, q)
+&= W^\top(p-y) - W^\top(q-y) \\[2pt]
+&= W^\top(p-q) \\[2pt]
+&= \nabla_{\mathbf{h}_{S}} D_{\mathrm{KL}}\!\left(\mathrm{sg}(q) \,\|\, p\right),
+\end{aligned}
+$$
+which is the forward KL gradient we wanted!
+
+Here is a PyTorch implementation of the trick:
+
+```python
+# teacher and student share the output head W
+h_t = teacher(x)
+h_s = student(x)
+
+# straight-through gradient routing
+# h_t is numerically unchanged
+h_t = h_t + (h_s.detach() - h_s)
+
+loss = ce(W, h_t, y) + ce(W, h_s, y)
+loss.backward()
+
+# h_s.grad is now exactly W.T @ (p - q),
+# the forward-KL gradient. no logits were built.
+```
+
+There are two things that make this trick appealing computation-wise. 
+- First, the subtraction happens in hidden-state space, of dimension $d$,
+not in logit space, of dimension $V$, and $d \ll V$ in cases like language pre-training. 
+- Second, you never compute either gradient term yourself. $W^\top(p-y)$ is just the gradient that
+backpropagating a cross-entropy loss already gives you, and fused cross-entropy kernels produce it
+without ever materializing the logits $p$. So the trick keeps the memory-saving benefits that those fused kernels provide.
+
+</Section>
+
+<Section id="caveats">
+## > caveats
+
+There are, of course, some caveats to this trick. It only works under certain conditions:
+- Teacher and student must share the **same** linear output head $W$, and therefore the same
+  vocabulary.
+- Both must have a cross-entropy computed against the same target token, any shared token will do. 
+- Forward KL only, with a detached teacher.
+
+**Note:** $\mathbf{h}_{S}$ and $\mathbf{h}_{T}$ receive the exact KL gradient, but the
+shared head $W$ itself still receives a cross-entropy gradient, not a KL one. If you need $W$ updated
+under the KL too, this trick will not give you that. For the many methods that freeze the output head
+under the KL loss, this is a non-issue.
+
+</Section>
+
+<Section id="mtp">
+# Multi-token prediction
+
+Multi-token prediction (MTP; <Cite refs={mtpOriginRefs} />) trains a model to predict several
+future tokens instead of just the next one. It is now a standard ingredient in frontier
+pre-training<Cite refs={mtpAdoptionRefs} /> because it enables faster inference via speculative
+decoding.
+
+But everyone trains the MTP heads with plain cross-entropy against the data. If the goal is
+acceptance under the next-token prediction (NTP) distribution, we should arguably self-distill
+the MTP heads toward it instead. Naively minimizing the forward KL between the MTP and NTP distributions is expensive, and
+this is exactly where the KL gradient–recovery trick comes in!
+
+MTP satisfies the requirements of the KL gradient–recovery trick by construction: the $k$-th MTP head pushes its hidden
+state through the same output matrix (also commonly called the *"LM head"*) as the next-token head, and it predicts the same target token that the NTP
+head predicts $k$ steps ahead.
+
+The KL gradient–recovery trick can be applied to each MTP head, and the resulting gradient is exactly the gradient of the forward KL between the MTP and NTP distributions. This enables what we call **Soft Multi-Token Prediction (Soft-MTP)**.
+
+<Figure
+  src="/blog/assets/2026-10-27-soft-mtp/soft_mtp_cover_no_titles.png"
+  caption="Illustration of Soft-MTP."
+  width="100%"
+/>
+
+From 167M to 1.2B parameters, Soft-MTP improves over standard MTP with lower NTP perplexity, faster
+speculative decoding and higher zero-shot accuracy at **every** scale, plus stronger math and code
+reasoning after fine-tuning. It also matches or beats explicit KL minimization on most metrics, at a
+fraction of the cost. 
+
+Please check out [the Soft-MTP paper](https://arxiv.org/abs/2610.38331) and the [code](https://github.com/JaydenTeoh/Soft-MTP) for more details.
+
+</Section>
+
+<Section id="beyond">
+## > other use cases
+
+The KL gradient–recovery trick applies more broadly beyond MTP. Many post-training methods
+require the expensive KL, e.g., MTP Boosting, on-policy self-distillation, score centering
+for off-policy RL<Cite refs={klPostTrainingRefs} />. This trick, with some creative adaptations, can be useful in these settings too, 
+and I hope it will be adopted more widely.
+
+</Section>
+
+
+<BibTeX note="If you find this work useful, please cite the Soft-MTP paper where this trick came from:">{`@misc{teoh2026multitokenpredictiondoneright,
+  title         = {Multi-Token Prediction Done Right},
+  author        = {Jayden Teoh},
+  year          = {2026},
+  eprint        = {2610.38331},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.LG},
+  url           = {https://arxiv.org/abs/2610.38331},
+}`}</BibTeX>

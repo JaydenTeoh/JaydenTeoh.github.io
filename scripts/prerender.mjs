@@ -8,7 +8,8 @@
 //
 // This script runs after `vite build`. For every known route it writes a real
 // <route>/index.html (200 status) with the correct <title>, description,
-// canonical, Open Graph, Twitter, and JSON-LD baked into the initial HTML. The
+// canonical, Open Graph, Twitter, Highwire `citation_*` (Google Scholar), and
+// JSON-LD baked into the initial HTML. The
 // React app still hydrates and renders the full body client-side; Googlebot
 // executes that JS for the article text. It also regenerates sitemap.xml so it
 // can never drift from the route list.
@@ -17,6 +18,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { posts, postYear } from '../src/data/posts.js'
+import { scholarTags } from '../src/data/scholar.js'
 import {
   buildTitle,
   canonicalPath,
@@ -57,6 +59,7 @@ const routes = [
     date: post.date,
     tags: post.tags,
     isPost: true,
+    post,
   })),
 ]
 
@@ -96,19 +99,54 @@ function metaTags(route) {
     ])
   }
 
+  // Highwire Press tags, for Google Scholar. Scholar does not run JS, so these
+  // only work baked in here. Posts without a `scholar` block emit none.
+  const scholar = route.post?.scholar
+  for (const { name, content } of scholarTags(route.post, { canonicalUrl, toAbsolute })) {
+    tags.push([`name="${name}"`, `<meta name="${name}" content="${escapeAttr(content)}" />`])
+  }
+
+  // A post about one of my own papers is a ScholarlyArticle, not a BlogPosting:
+  // it gets the real author list, the paper title, and a link to the PDF.
+  const identifiers = []
+  if (scholar?.arxivId) identifiers.push(`arXiv:${scholar.arxivId}`)
+  if (scholar?.doi) identifiers.push(`https://doi.org/${scholar.doi}`)
+  const pdfUrl = scholar?.pdf
+    ? /^https?:\/\//.test(scholar.pdf)
+      ? scholar.pdf
+      : toAbsolute(scholar.pdf)
+    : null
+
   const jsonLd = route.isPost
     ? {
         '@context': 'https://schema.org',
-        '@type': 'BlogPosting',
-        headline: route.title,
+        '@type': scholar ? 'ScholarlyArticle' : 'BlogPosting',
+        headline: scholar?.title || route.title,
         description: route.description,
         image: imageUrl,
         datePublished: route.date,
         dateModified: route.date,
-        author: { '@type': 'Person', name: siteName, url: siteUrl },
+        author: scholar?.authors?.length
+          ? scholar.authors.map((name) => ({ '@type': 'Person', name }))
+          : { '@type': 'Person', name: siteName, url: siteUrl },
         publisher: { '@type': 'Person', name: siteName },
         mainEntityOfPage: canonicalUrl,
-        ...(route.tags?.length ? { keywords: route.tags.join(', ') } : {}),
+        ...(scholar?.keywords?.length
+          ? { keywords: scholar.keywords.join(', ') }
+          : route.tags?.length
+            ? { keywords: route.tags.join(', ') }
+            : {}),
+        ...(identifiers.length ? { identifier: identifiers } : {}),
+        ...(scholar?.arxivId ? { sameAs: `https://arxiv.org/abs/${scholar.arxivId}` } : {}),
+        ...(pdfUrl
+          ? {
+              encoding: {
+                '@type': 'MediaObject',
+                encodingFormat: 'application/pdf',
+                contentUrl: pdfUrl,
+              },
+            }
+          : {}),
       }
     : null
 

@@ -53,6 +53,7 @@ export default function PostPage() {
         description={post.excerpt || `Read ${post.title} by Jayden Teoh.`}
         path={`/blog/${year}/${slug}`}
         image={post.socialImage || post.cover}
+        post={post}
       />
       <Header />
 

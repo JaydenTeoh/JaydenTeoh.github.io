@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { buildTitle, canonicalPath, defaultOgImage, siteUrl } from '../data/site.js'
+import { scholarTags } from '../data/scholar.js'
 
 function upsertMeta(selector, attrs) {
   let element = document.head.querySelector(selector)
@@ -27,6 +28,21 @@ function toAbsoluteUrl(pathname) {
   return new URL(pathname, siteUrl).toString()
 }
 
+// `citation_author` repeats, so these can't be upserted by selector like the
+// others. Scholar only ever reads the pre-rendered HTML; this exists so that a
+// client-side navigation doesn't leave the previous post's citation in the DOM.
+function syncCitationTags(tags) {
+  for (const element of document.head.querySelectorAll('meta[name^="citation_"]')) {
+    element.remove()
+  }
+  for (const { name, content } of tags) {
+    const element = document.createElement('meta')
+    element.setAttribute('name', name)
+    element.setAttribute('content', content)
+    document.head.appendChild(element)
+  }
+}
+
 export default function SEO({
   title,
   description,
@@ -34,6 +50,7 @@ export default function SEO({
   image = defaultOgImage,
   type = 'website',
   noindex = false,
+  post = null,
 }) {
   useEffect(() => {
     const fullTitle = buildTitle(title)
@@ -94,7 +111,8 @@ export default function SEO({
       rel: 'canonical',
       href: canonicalUrl,
     })
-  }, [description, image, noindex, path, title, type])
+    syncCitationTags(scholarTags(post, { canonicalUrl, toAbsolute: toAbsoluteUrl }))
+  }, [description, image, noindex, path, post, title, type])
 
   return null
 }

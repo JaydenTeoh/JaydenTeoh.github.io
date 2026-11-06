@@ -39,6 +39,7 @@ export const papers = [
     links: [
       { label: 'code', href: 'https://github.com/JaydenTeoh/Soft-MTP' },
       { label: 'arXiv', href: 'https://arxiv.org/abs/2610.38331' },
+      { label: 'blog post', href: 'https://jaydenteoh.github.io/blog/2026/soft-mtp/' },
     ],
     blurb:
       'We show the standard multi-token prediction gradient hides a KL self-distillation signal behind a noisy residual, and introduce the KL gradient–recovery trick to extract it. This is a free lunch that improves MTP across a range of tasks.',
