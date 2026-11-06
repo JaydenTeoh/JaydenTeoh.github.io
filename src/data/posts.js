@@ -9,6 +9,7 @@ export const posts = [
     cover: '/blog/assets/2026-10-27-soft-mtp/soft_mtp_cover_no_titles.png',
     socialImage: '/blog/assets/2026-10-27-soft-mtp/soft_mtp_cover_no_titles.png',
     layout: 'paper',
+    heroAlign: 'left',
     // Google Scholar indexing metadata. See src/data/scholar.js.
     scholar: {
       title: 'Multi-Token Prediction Done Right',

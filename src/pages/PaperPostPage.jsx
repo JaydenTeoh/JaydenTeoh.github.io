@@ -87,7 +87,11 @@ export default function PaperPostPage() {
       />
       <Header />
 
-      <main className="paper-page paper-page--sidebar">
+      <main
+        className={`paper-page paper-page--sidebar${
+          post.heroAlign === 'left' ? ' paper-page--hero-left' : ''
+        }`}
+      >
         <p className="paper-back">
           <Link to="/blog">← back to all posts</Link>
         </p>

@@ -1259,3 +1259,47 @@
     transform: translate(-50%, -50%);
   }
 }
+
+/* ---------- Left-aligned hero (opt in per post: `heroAlign: 'left'`) ----------
+   Scoped to the page wrapper rather than a stylesheet imported by the MDX:
+   Vite injects a chunk's CSS on load and never removes it, so a per-post
+   stylesheet would keep applying to every post visited afterwards in the same
+   SPA session. The wrapper class unmounts with the route. */
+
+.paper-page.paper-page--hero-left .paper-hero {
+  text-align: left;
+  /* .paper-hero is otherwise unconstrained and only looks centred because its
+     text is. Give it the same box as .paper-section so the title, byline and
+     date share a left edge with the body copy. */
+  max-width: 896px;
+  padding: 0 1.5rem;
+}
+
+/* The accent glow is anchored to the centre by default; follow the text. */
+.paper-page.paper-page--hero-left .paper-hero::before {
+  left: 0;
+  transform: none;
+  width: min(100%, 520px);
+}
+
+.paper-page.paper-page--hero-left .paper-authors-line,
+.paper-page.paper-page--hero-left .paper-actions {
+  justify-content: flex-start;
+}
+
+/* .paper-section narrows its gutter at these two breakpoints; the hero has to
+   track it or the title drifts out of line again on small screens. */
+@media (max-width: 768px) {
+  .paper-page.paper-page--hero-left .paper-hero {
+    padding-left: 0.875rem;
+    padding-right: 0.875rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .paper-page.paper-page--hero-left .paper-hero {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+}
+
