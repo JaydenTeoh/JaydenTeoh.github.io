@@ -2,7 +2,7 @@ export const posts = [
   {
     slug: 'soft-mtp',
     title: 'The KL Gradient–Recovery Trick',
-    date: '2026-10-27',
+    date: '2026-11-05',
     tags: ['machine learning', 'research', 'my publications'],
     excerpt:
       'When two distributions come from the same linear output head, the gradient of their forward KL can be recovered from the difference of two cross-entropy gradients without materializing any logits or computing the KL.',
