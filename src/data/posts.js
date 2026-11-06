@@ -1,6 +1,6 @@
 export const posts = [
   {
-    slug: 'soft-mtp',
+    slug: 'kl-gradient-recovery-trick',
     title: 'The KL Gradient–Recovery Trick',
     date: '2026-11-05',
     tags: ['machine learning', 'research', 'my publications'],
