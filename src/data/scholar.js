@@ -8,6 +8,24 @@
 // Scholar also requires the PDF it is pointed at to be freely readable with no
 // login, and the landing page to hold at least the abstract.
 // Tag reference: https://scholar.google.com/intl/en/scholar/inclusion.html#indexing
+//
+// A post opts in by carrying a `scholar` block in posts.js. Two shapes:
+//
+//   companion to a paper of mine — `title` is the PAPER's title and `pdf` points
+//   at the paper, so Scholar folds the post into the existing arXiv record
+//   rather than minting a second one:
+//     scholar: { title: 'Multi-Token Prediction Done Right', authors: ['Jayden Teoh'],
+//                institution: 'Massachusetts Institute of Technology',
+//                arxivId: '2610.38331', pdf: 'https://arxiv.org/pdf/2610.38331' }
+//
+//   standalone post, where the page IS the work — no `pdf`, so the post itself
+//   is declared the full text:
+//     scholar: { authors: ['Jayden Teoh'],
+//                institution: 'Massachusetts Institute of Technology',
+//                keywords: ['...'] }
+//
+// Scholar's inclusion guidelines exclude ordinary blog posts, so correct tags
+// make a post eligible rather than guaranteed.
 
 // Scholar accepts YYYY, YYYY/MM or YYYY/MM/DD. Post dates are ISO (YYYY-MM-DD).
 export function scholarDate(isoDate) {
@@ -42,6 +60,11 @@ export function scholarTags(post, { canonicalUrl, toAbsolute }) {
   add('citation_doi', scholar.doi)
   add('citation_abstract_html_url', canonicalUrl)
   add('citation_pdf_url', scholar.pdf && absolute(scholar.pdf))
+  // Only when nothing else is the canonical full text. On a post that
+  // accompanies one of my papers the paper is, and claiming the post as a
+  // second full text is how you end up with a duplicate Scholar record
+  // competing with the arXiv one instead of merging into it.
+  if (!scholar.pdf) add('citation_fulltext_html_url', canonicalUrl)
   add('citation_language', 'en')
   if (scholar.keywords?.length) add('citation_keywords', scholar.keywords.join('; '))
 
