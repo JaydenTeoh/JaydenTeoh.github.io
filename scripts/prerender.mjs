@@ -9,16 +9,17 @@
 // This script runs after `vite build`. For every known route it writes a real
 // <route>/index.html (200 status) with the correct <title>, description,
 // canonical, Open Graph, Twitter, Highwire `citation_*` (Google Scholar), and
-// JSON-LD baked into the initial HTML. The
-// React app still hydrates and renders the full body client-side; Googlebot
-// executes that JS for the article text. It also regenerates sitemap.xml so it
-// can never drift from the route list.
+// JSON-LD baked into the initial HTML. Post routes additionally get their MDX
+// body rendered into #root (see prerender-body.mjs) so that crawlers which
+// never execute JS still receive the article text. It also regenerates
+// sitemap.xml so it can never drift from the route list.
 
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { posts, postYear } from '../src/data/posts.js'
 import { scholarTags } from '../src/data/scholar.js'
+import { renderPostBody } from './prerender-body.mjs'
 import {
   buildTitle,
   canonicalPath,
@@ -153,15 +154,22 @@ function metaTags(route) {
   return { fullTitle, head: tags.map(([, html]) => html), jsonLd }
 }
 
-// Inject route-specific metadata into the built index.html template.
-function render(template, route) {
+// Inject route-specific metadata into the built index.html template, plus the
+// statically rendered article body when there is one.
+function render(template, route, body = null) {
   const { fullTitle, head, jsonLd } = metaTags(route)
   const extra = [...head]
   if (jsonLd) {
     extra.push(`<script type="application/ld+json">${escapeJsonLd(jsonLd)}</script>`)
   }
 
-  return template
+  // A function replacement, because article text containing `$&` or `$1` would
+  // otherwise be interpreted as a replacement pattern and silently mangled.
+  const withBody = body
+    ? template.replace('<div id="root"></div>', () => `<div id="root">${body}</div>`)
+    : template
+
+  return withBody
     .replace(/<title>[\s\S]*?<\/title>/, `<title>${escapeAttr(fullTitle)}</title>`)
     .replace(
       /<meta\s+name="description"[\s\S]*?\/>/,
@@ -175,7 +183,11 @@ function render(template, route) {
 }
 
 async function writeRoute(template, route) {
-  const html = render(template, route)
+  // Only posts get a pre-rendered body: `/` and `/blog` are navigation, already
+  // described by their meta tags, and rendering them would mean dragging the
+  // router and every page component into this script.
+  const body = route.isPost ? await renderPostBody(route.post) : null
+  const html = render(template, route, body)
   const outPath =
     route.path === '/'
       ? join(distDir, 'index.html')
