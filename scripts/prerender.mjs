@@ -64,6 +64,18 @@ const routes = [
   })),
 ]
 
+// Paths a post used to live at. GitHub Pages serves static files only, so there
+// is no way to return a real 301 — without a file here Pages falls back to
+// 404.html and the old link is simply dead. A zero-delay meta refresh is what
+// Google documents as equivalent to a permanent redirect, so this returns 200,
+// sends the crawler on to the new URL, and stops a saved link breaking.
+// Deliberately absent from sitemap.xml: you ask Google to follow a redirect,
+// never to index one.
+const redirects = [
+  // renamed 2026-11-06, after one day live
+  { from: '/blog/2026/soft-mtp/', to: '/blog/2026/kl-gradient-recovery-trick/' },
+]
+
 function metaTags(route) {
   const fullTitle = buildTitle(route.title)
   const canonicalUrl = toAbsolute(canonicalPath(route.path))
@@ -197,6 +209,23 @@ async function writeRoute(template, route) {
   return outPath
 }
 
+function redirectHtml(target) {
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Moved</title>
+    <link rel="canonical" href="${escapeAttr(target)}" />
+    <meta http-equiv="refresh" content="0; url=${escapeAttr(target)}" />
+  </head>
+  <body>
+    <p>This page has moved to <a href="${escapeAttr(target)}">${escapeAttr(target)}</a>.</p>
+  </body>
+</html>
+`
+}
+
 function buildSitemap() {
   const entries = routes
     .map((route) => {
@@ -227,6 +256,14 @@ async function main() {
   })
   await writeFile(join(distDir, '404.html'), notFoundHtml)
   console.log('wrote dist/404.html (noindex SPA fallback)')
+
+  for (const { from, to } of redirects) {
+    const target = toAbsolute(canonicalPath(to))
+    const outPath = join(distDir, from, 'index.html')
+    await mkdir(dirname(outPath), { recursive: true })
+    await writeFile(outPath, redirectHtml(target))
+    console.log(`redirect ${from} -> ${to}`)
+  }
 
   await writeFile(join(distDir, 'sitemap.xml'), buildSitemap())
   console.log(`wrote dist/sitemap.xml (${routes.length} urls)`)
