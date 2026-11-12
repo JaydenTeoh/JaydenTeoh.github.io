@@ -11,8 +11,10 @@
 // canonical, Open Graph, Twitter, Highwire `citation_*` (Google Scholar), and
 // JSON-LD baked into the initial HTML. Post routes additionally get their MDX
 // body rendered into #root (see prerender-body.mjs) so that crawlers which
-// never execute JS still receive the article text. It also regenerates
-// sitemap.xml so it can never drift from the route list.
+// never execute JS still receive the article text, and the `/` and `/blog`
+// routes get their navigation links (see prerender-nav.mjs) so those crawlers
+// have a path to the posts at all. It also regenerates sitemap.xml so it can
+// never drift from the route list.
 
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
@@ -20,6 +22,7 @@ import { fileURLToPath } from 'node:url'
 import { posts, postYear } from '../src/data/posts.js'
 import { scholarTags } from '../src/data/scholar.js'
 import { renderPostBody } from './prerender-body.mjs'
+import { renderNavBody } from './prerender-nav.mjs'
 import {
   buildTitle,
   canonicalPath,
@@ -195,10 +198,10 @@ function render(template, route, body = null) {
 }
 
 async function writeRoute(template, route) {
-  // Only posts get a pre-rendered body: `/` and `/blog` are navigation, already
-  // described by their meta tags, and rendering them would mean dragging the
-  // router and every page component into this script.
-  const body = route.isPost ? await renderPostBody(route.post) : null
+  // Posts get their full article text; `/` and `/blog` get their links, which
+  // is the part of a navigation page a crawler needs. 404.html passes through
+  // with an empty #root, since there is nothing there to link to.
+  const body = route.isPost ? await renderPostBody(route.post) : renderNavBody(route.path)
   const html = render(template, route, body)
   const outPath =
     route.path === '/'
